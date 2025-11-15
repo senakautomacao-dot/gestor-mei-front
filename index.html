@@ -236,8 +236,8 @@
   const API_BASE = "https://gestor-mei-backend.onrender.com/api/"; // <<== substituir se necessário
   /*********************************************************/
 
-  // cria cliente supabase
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // cria cliente supabase (usar window.supabase para evitar shadowing/TDZ)
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // estado
   let session = null;
@@ -255,7 +255,7 @@
   // Inicialização: captura sessão (pode vir do redirect)
   (async function init(){
     try {
-      const { data } = await supabase.auth.getSession();
+      const { data } = await supabaseClient.auth.getSession();
       session = data.session;
       user = session?.user ?? null;
     } catch(e){
@@ -265,7 +265,7 @@
     updateAuthUI();
 
     // listener de auth (cuidado: redirecionamento também roda getSession)
-    supabase.auth.onAuthStateChange((event, s) => {
+    supabaseClient.auth.onAuthStateChange((event, s) => {
       session = s;
       user = s?.user ?? null;
       updateAuthUI();
@@ -302,7 +302,7 @@
   // Login
   async function startLogin(){
     // usa redirecionamento (vai para Google e volta)
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin } // volta para a raiz
     });
@@ -314,7 +314,7 @@
   // logout
   async function logout(){
     try {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
     } catch(e){ console.warn('logout erro', e); }
     session = null; user = null;
     updateAuthUI();
@@ -452,7 +452,7 @@
   async function carregarDadosIniciais(){
     try {
       // atualizar session por precaução
-      const s = await supabase.auth.getSession();
+      const s = await supabaseClient.auth.getSession();
       session = s.data.session;
       user = session?.user ?? null;
     } catch(e){}
