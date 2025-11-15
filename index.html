@@ -120,6 +120,7 @@
     <button class="btn" data-target="lancamentos" onclick="showPage('lancamentos')">Lançamentos</button>
     <button class="btn" data-target="historico" onclick="showPage('historico')">Histórico</button>
     <button class="btn" data-target="cnpj" onclick="showPage('cnpj')">Consulta CNPJ (BrasilAPI)</button>
+    <button class="btn" data-target="acoes" onclick="showPage('acoes')">Ações Rápidas</button> (BrasilAPI)</button>
 
     <div style="height:10px"></div>
     <button id="btn-logout" class="btn hidden" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.25)" onclick="logout()">Sair</button>
@@ -208,22 +209,15 @@
       </section>
 
       <!-- Histórico -->
-      <section id="historico" class="card" style="display:none;margin-top:18px;">
-        <h3>Histórico</h3>
-        <div style="display:flex;gap:10px;margin-bottom:10px">
-          <div style="flex:1">
-            <label>Filtrar por</label>
-            <select id="filtro-tipo">
-              <option value="all">Todos</option>
-              <option value="receitas">Receitas</option>
-              <option value="compras">Compras</option>
-            </select>
-          </div>
-        </div>
+      $&
 
-        <div class="history" id="history-list">
-          <div class="row"><div>Nenhum lançamento.</div></div>
-        </div>
+      <!-- AÇÕES RÁPIDAS -->
+      <section id="acoes" class="card" style="display:none;margin-top:18px;">
+        <h3>Ações Rápidas</h3>
+        <a href="https://www.nfse.gov.br/EmissorNacional/Login?ReturnUrl=%2fEmissorNacional" target="_blank" class="btn-primary" style="display:block;margin-bottom:10px;text-align:center;">Emitir Nota Fiscal (NFS-e)</a>
+        <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao" target="_blank" class="btn-primary" style="background:#fd7e14;display:block;margin-bottom:10px;text-align:center;">Pagar Guia (DAS Mensal)</a>
+        <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/dasnsimei.app/Identificacao" target="_blank" class="btn-primary" style="background:#343a40;display:block;margin-bottom:10px;text-align:center;">Entregar Declaração Anual</a>
+        <button class="btn-primary" style="background:#17a2b8;text-align:center;" onclick="window.print()">Imprimir Relatório</button>
       </section>
     </section>
 
