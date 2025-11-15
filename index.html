@@ -1,249 +1,960 @@
-<!doctype html>
-<html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestor MEI - Painel</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor MEI</title>
 
-  <!-- Supabase SDK v2 -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --cor-primaria: #007bff;
+            --cor-verde: #28a745;
+            --cor-laranja: #fd7e14;
+            --cor-vermelho: #dc3545;
+            --cor-cinza-claro: #f4f7f6;
+            --cor-texto: #333;
+            --cor-borda: #e0e0e0;
+        }
 
-  <style>
-    :root{
-      --cor-primaria:#007bff;
-      --cor-primaria-dark:#0056b3;
-      --cor-verde:#28a745;
-      --cor-laranja:#fd7e14;
-      --cor-vermelho:#dc3545;
-      --bg:#f4f7f6;
-      --text:#333;
-      --card:#ffffff;
-      --borda:#e0e0e0;
-      --glass: rgba(255,255,255,0.6);
-      --radius:12px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background:linear-gradient(180deg,var(--bg),#ffffff);
-      color:var(--text);
-      min-height:100vh;
-      display:flex;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--cor-cinza-claro);
+            color: var(--cor-texto);
+            margin: 0;
+            padding: 0;
+        }
+        
+        #app-container {
+            display: flex;
+            min-height: 100vh;
+        }
 
-    /* Layout */
-    .sidebar{
-      width:300px;
-      min-width:260px;
-      background:var(--cor-primaria);
-      color:white;
-      padding:20px;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-      transition:transform .28s ease, width .2s ease;
-      box-shadow: 2px 0 12px rgba(0,0,0,0.06);
-      border-top-right-radius:var(--radius);
-      border-bottom-right-radius:var(--radius);
-    }
-    .sidebar.collapsed{transform:translateX(-100%)}
-    .brand{font-size:1.5rem;font-weight:700;text-align:center}
-    .user-small{font-size:0.9rem;color:rgba(255,255,255,0.9)}
-    .nav{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-    .btn{background:transparent;border:2px solid rgba(255,255,255,.7);color:white;padding:10px 12px;border-radius:10px;text-align:left;cursor:pointer;font-weight:600}
-    .btn:hover{background:rgba(255,255,255,0.06)}
-    .btn.primary{background:white;color:var(--cor-primaria);border-color:white}
+        #sidebar-nav {
+            width: 280px;
+            background-color: var(--cor-primaria);
+            color: white;
+            padding: 25px;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            transition: margin-left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #sidebar-nav h1 {
+            font-size: 1.8rem;
+            margin: 0 0 30px 0;
+            text-align: center;
+        }
 
-    /* Main */
-    .main{flex:1;padding:20px;overflow:auto}
-    header.app-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .app-header-card{background:linear-gradient(90deg,var(--cor-primaria),var(--cor-primaria-dark));color:white;padding:16px;border-radius:12px;display:flex;align-items:center;justify-content:space-between}
-    .app-header-card h1{margin:0;font-size:1.15rem}
+        #nav-buttons-container {
+            flex-grow: 1;
+        }
 
-    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.04);}
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-    .big{font-size:1.4rem;font-weight:700}
+        button.nav-btn {
+            background-color: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            color: white;
+            padding: 15px 20px;
+            width: 100%;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        button.nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
 
-    /* Forms */
-    label{display:block;font-weight:700;margin-bottom:6px}
-    input[type="text"], input[type="number"], input[type="tel"], select{
-      width:100%;padding:10px;border:1px solid var(--borda);border-radius:8px;margin-bottom:12px;font-size:1rem
-    }
-    .btn-primary{background:var(--cor-primaria);color:white;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
-    .btn-ghost{background:transparent;border:2px solid var(--cor-primaria);color:var(--cor-primaria);padding:8px 10px;border-radius:8px;cursor:pointer}
+        button.nav-btn.active {
+            background-color: white;
+            color: var(--cor-primaria);
+            border-color: white;
+        }
 
-    /* History */
-    .history{max-height:420px;overflow:auto;border:1px solid #f0f0f0;border-radius:8px;padding:6px}
-    .row{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #f7f7f7}
+        #btn-recolher-menu {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            padding: 12px;
+            margin-top: 20px;
+        }
+        #btn-recolher-menu:hover {
+             background-color: rgba(0, 0, 0, 0.3);
+        }
 
-    /* Mobile tweaks */
-    .topbar-mobile{display:none}
-    @media (max-width:900px){
-      body{flex-direction:column}
-      .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:999;padding-top:40px;width:260px}
-      .sidebar.collapsed{transform:translateX(-102%)}
-      .main{padding:12px}
-      .grid{grid-template-columns:1fr}
-      .topbar-mobile{display:flex;background:white;padding:10px;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
-      .btn.mobile-toggle{background:var(--cor-primaria);color:white;padding:8px;border-radius:8px;border:none}
-    }
+        #btn-abrir-menu {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: var(--cor-primaria);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            padding: 8px 15px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
 
-    /* Onboarding modal */
-    .onboard{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:2000}
-    .onboard .panel{width:880px;max-width:96%;background:white;padding:20px;border-radius:12px}
-    .onboard h2{margin-top:0}
-    @media (max-width:600px){.onboard .panel{padding:14px}}
+        @media (min-width: 901px) {
+            body.menu-recolhido #sidebar-nav {
+                margin-left: -280px;
+            }
+            body.menu-recolhido #btn-abrir-menu {
+                display: block;
+            }
+        }
 
-    /* small helpers */
-    .muted{color:#666;font-size:0.95rem}
-    .hidden{display:none!important}
-  </style>
+        #main-content-area {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .content-page { display: none; }
+        .content-page.active { display: block; }
+        
+        @media (max-width: 900px) {
+            #app-container {
+                flex-direction: column;
+            }
+            #sidebar-nav {
+                width: 100%;
+                height: auto;
+                padding-bottom: 15px;
+                margin-left: 0 !important;
+            }
+            #sidebar-nav h1 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+            #sidebar-nav button.nav-btn {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+            #btn-recolher-menu,
+            #btn-abrir-menu {
+                display: none !important;
+            }
+            #main-content-area {
+                padding: 15px;
+            }
+        }
+        
+        header {
+            background-color: var(--cor-primaria);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        header h1 { margin: 0; font-size: 1.5rem; }
+        
+        section {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        h2 {
+            font-size: 1.4rem;
+            color: var(--cor-primaria);
+            margin-top: 0;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        p { line-height: 1.5; }
+        hr { border: none; height: 1px; background-color: var(--cor-borda); margin: 25px 0; }
+        
+        #dashboard div {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        #dashboard div:last-child { border-bottom: none; }
+        
+        #dashboard div span { color: #555; }
+        #dashboard div strong { font-weight: 600; }
+
+        .verde { color: var(--cor-verde); }
+        .laranja { color: var(--cor-laranja); }
+        .vermelho { color: var(--cor-vermelho); }
+        
+        .aviso {
+            display: none;
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+        .aviso.vermelho {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+        .aviso.laranja {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+
+        label { display: block; font-weight: 600; margin-bottom: 8px; }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            display: inline-block;
+            width: 100%;
+            color: white;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            box-sizing: border-box;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primario { background-color: var(--cor-primaria); }
+        .btn-primario:hover { background-color: #0056b3; }
+        
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        .btn-secundario {
+            background-color: #6c757d;
+            font-size: 0.8rem;
+            padding: 8px;
+            width: auto;
+            margin-top: 10px;
+        }
+        .btn-secundario:hover { background-color: #5a6268; }
+
+        .btn-success { background-color: var(--cor-verde); }
+        .btn-success:hover { background-color: #218838; }
+        
+        .btn-relatorio {
+            background-color: #17a2b8;
+            margin-top: 15px;
+        }
+        .btn-relatorio:hover {
+            background-color: #138496;
+        }
+        
+        .btn-warning {
+            background-color: var(--cor-laranja);
+            color: white;
+            margin-top: 15px;
+        }
+        .btn-warning:hover {
+            background-color: #e66b00;
+        }
+
+        .btn-dark-gray {
+            background-color: #343a40;
+            margin-top: 15px;
+        }
+        .btn-dark-gray:hover {
+            background-color: #23272b;
+        }
+        
+        .btn-compra { background-color: #555; }
+        .btn-compra:hover { background-color: #333; }
+
+        .historico-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            padding: 5px;
+        }
+
+        .historico-lista { list-style: none; padding: 0; margin: 0; }
+        .historico-lista li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 5px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .historico-lista li:last-child { border-bottom: none; }
+        .historico-lista .descricao {
+            font-weight: 500;
+            color: #444;
+            word-break: break-all;
+            padding-right: 15px; 
+        }
+        .historico-lista .valor-receita { font-weight: 600; color: var(--cor-primaria); white-space: nowrap; }
+        .historico-lista .valor-compra { font-weight: 600; color: var(--cor-vermelho); white-space: nowrap; }
+
+        .lista-vazia { font-style: italic; color: #888; text-align: center; padding: 10px 0; }
+        
+        .escondido { display: none; }
+        #setup-container { text-align: center; padding: 20px; }
+        #setup-error {
+            color: var(--cor-vermelho);
+            font-weight: 500;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #relatorio-para-impressao {
+            display: none;
+            font-family: Arial, sans-serif;
+            color: #000;
+            padding: 20mm;
+        }
+        #relatorio-para-impressao h1 {
+            font-size: 18pt;
+            color: #000;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+        #relatorio-para-impressao h2 {
+            font-size: 14pt;
+            color: #000;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        #relatorio-para-impressao p {
+            font-size: 11pt;
+            color: #333;
+        }
+        #relatorio-para-impressao table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 10pt;
+        }
+        #relatorio-para-impressao th, #relatorio-para-impressao td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+        #relatorio-para-impressao th {
+            background-color: #f0f0f0;
+            text-align: left;
+            font-weight: bold;
+        }
+        #relatorio-para-impressao .total-row td {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #relatorio-para-impressao, #relatorio-para-impressao * {
+                visibility: visible;
+            }
+            #relatorio-para-impressao {
+                display: block;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+        }
+
+    </style>
 </head>
 <body>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar collapsed" id="sidebar">
-    <div class="brand">Gestor MEI</div>
-    <div id="user-block" class="user-small">Não autenticado</div>
+<button id="btn-abrir-menu" title="Abrir Menu">☰</button>
 
-    <nav class="nav">
-      <button class="btn" data-target="dashboard" onclick="showPage('dashboard')">Dashboard</button>
-      <button class="btn" data-target="lancamentos" onclick="showPage('lancamentos')">Lançamentos</button>
-      <button class="btn" data-target="historico" onclick="showPage('historico')">Histórico</button>
-      <button class="btn" data-target="cnpj" onclick="showPage('cnpj')">Consulta CNPJ</button>
-      <button class="btn" data-target="acoes" onclick="showPage('acoes')">Ações Rápidas</button>
-    </nav>
-
-    <div style="flex:1"></div>
-    <button id="btn-logout" class="btn hidden" onclick="logout()">Sair</button>
-    <div class="muted" style="margin-top:8px">Versão 1 • Gestor MEI</div>
-  </aside>
-
-  <div style="flex:1;display:flex;flex-direction:column">
-    <div class="topbar-mobile">
-      <button class="btn mobile-toggle" id="mobile-toggle">☰</button>
-      <div style="font-weight:700">Gestor MEI</div>
-      <div id="mobile-user" class="muted">—</div>
-    </div>
-
-    <main class="main">
-      <header class="app-header">
-        <div class="app-header-card">
-          <h1>Painel do MEI</h1>
-          <div>
-            <button id="btn-login" class="btn-primary">Entrar com Google</button>
-          </div>
-        </div>
-      </header>
-
-      <!-- LOGIN -->
-      <section id="login-screen" class="card">
-        <h2>Bem-vindo ao Gestor MEI</h2>
-        <p class="muted">Faça login com sua conta Google para continuar. Seus dados serão sincronizados com o servidor (opcional).</p>
-        <div style="margin-top:12px"><button id="login-start" class="btn-primary">Entrar com Google</button></div>
-      </section>
-
-      <!-- CNPJ -->
-      <section id="cnpj-screen" class="card hidden" style="margin-top:16px">
-        <h3>Verificação obrigatória: informe seu CNPJ</h3>
-        <p class="muted">O aplicativo é exclusivo para Microempreendedores Individuais (MEI).</p>
-        <label for="cnpj-input">CNPJ (somente números)</label>
-        <input id="cnpj-input" type="text" placeholder="00000000000191">
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="btn-primary" onclick="consultarCNPJ(true)">Consultar e validar</button>
-          <button class="btn-ghost" onclick="skipCNPJ()">Cancelar (sair)</button>
-        </div>
-        <div id="cnpj-result" style="margin-top:12px"></div>
-      </section>
-
-      <!-- APP AREA -->
-      <section id="app-area" class="hidden" style="margin-top:16px">
-
-        <section id="dashboard" class="card" style="display:block;margin-bottom:12px">
-          <h3>Dashboard</h3>
-          <div class="grid" style="margin-top:12px">
-            <div class="card">
-              <h4>Total Faturado</h4>
-              <div class="big" id="total-receitas-display">R$ 0,00</div>
-            </div>
-            <div class="card">
-              <h4>Total Compras</h4>
-              <div class="big" id="total-compras-display">R$ 0,00</div>
-            </div>
-            <div class="card">
-              <h4>Limite MEI (anual)</h4>
-              <div class="big" id="limite-mei-display">R$ 81.000,00</div>
-            </div>
-          </div>
-          <div class="card" style="margin-top:12px">
-            <h4>Resumo Rápido</h4>
-            <div id="resumo-rapido">Carregando...</div>
-          </div>
+<div id="setup-container" class="escondido">
+    <header><h1>Bem-vindo ao Gestor MEI</h1></header>
+    <main>
+        <section id="setup">
+            <h2>Configuração Inicial</h2>
+            <p>Para calcular seu limite corretamente, por favor, informe seu CNPJ.</p>
+            <form id="form-setup">
+                <div>
+                    <label for="cnpj">Seu CNPJ:</label>
+                    <input type="tel" id="cnpj" placeholder="00.000.000/0001-00" required>
+                </div>
+                <button type="submit" id="btn-buscar-cnpj" class="btn btn-primario">Buscar e Salvar</button>
+                <p id="setup-error"></p>
+            </form>
         </section>
-
-        <section id="lancamentos" class="card hidden" style="margin-bottom:12px">
-          <h3>Adicionar Receita</h3>
-          <label for="descricao-receita">Descrição</label>
-          <input id="descricao-receita" type="text" placeholder="Ex: Venda do mês">
-          <label for="valor-receita">Valor (R$)</label>
-          <input id="valor-receita" type="number" step="0.01" placeholder="1500.00">
-          <button class="btn-primary" onclick="adicionarReceita()">Adicionar Receita</button>
-
-          <hr style="margin:14px 0">
-
-          <h3>Adicionar Compra</h3>
-          <label for="descricao-compra">Descrição</label>
-          <input id="descricao-compra" type="text" placeholder="Ex: Compra de materiais">
-          <label for="valor-compra">Valor (R$)</label>
-          <input id="valor-compra" type="number" step="0.01" placeholder="200.00">
-          <button class="btn-primary" onclick="adicionarCompra()">Adicionar Compra</button>
-        </section>
-
-        <section id="historico" class="card hidden" style="margin-bottom:12px">
-          <h3>Histórico</h3>
-          <div style="display:flex;gap:10px;margin-bottom:10px">
-            <div style="flex:1">
-              <label>Filtrar por</label>
-              <select id="filtro-tipo"><option value="all">Todos</option><option value="receitas">Receitas</option><option value="compras">Compras</option></select>
-            </div>
-          </div>
-          <div class="history" id="history-list"><div class="row"><div>Nenhum lançamento.</div></div></div>
-        </section>
-
-        <section id="acoes" class="card hidden" style="margin-bottom:12px">
-          <h3>Ações Rápidas</h3>
-          <a href="https://www.nfse.gov.br/EmissorNacional/Login?ReturnUrl=%2fEmissorNacional" target="_blank" class="btn-primary" style="display:block;margin-bottom:8px;text-align:center">Emitir Nota Fiscal (NFS-e)</a>
-          <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao" target="_blank" class="btn-primary" style="background:var(--cor-laranja);display:block;margin-bottom:8px;text-align:center">Pagar Guia (DAS Mensal)</a>
-          <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/dasnsimei.app/Identificacao" target="_blank" class="btn-primary" style="background:#343a40;display:block;margin-bottom:8px;text-align:center">Entregar Declaração Anual</a>
-          <button class="btn-primary" style="background:#17a2b8;text-align:center" onclick="window.print()">Imprimir Relatório</button>
-        </section>
-
-      </section>
     </main>
-  </div>
+</div>
 
-  <!-- Onboarding modal (aparece na primeira vez) -->
-  <div id="onboard" class="onboard hidden">
-    <div class="panel">
-      <h2>Bem-vindo ao Gestor MEI</h2>
-      <p>Antes de começar, vamos configurar seu app para usar seu CNPJ e dar um passeio rápido pelas funcionalidades.</p>
-      <ol>
-        <li>Faça login com Google (botão Entrar).</li>
-        <li>Validaremos seu CNPJ e liberaremos o painel.</li>
-        <li>Você pode salvar dados localmente ou sincronizar com seu backend.</li>
-      </ol>
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px">
-        <button id="skip-onboard" class="btn-ghost">Pular</button>
-        <button id="start-onboard" class="btn-primary">Vamos começar</button>
-      </div>
+
+<div id="app-container" class="escondido">
+    
+    <aside id="sidebar-nav">
+        <h1>Meu Gestor MEI</h1>
+        <div id="nav-buttons-container">
+            <button class="nav-btn" data-target="dashboard-page">Dashboard</button>
+            <button class="nav-btn" data-target="lancamentos-page">Lançamentos</button>
+            <button class="nav-btn" data-target="historicos-page">Históricos</button>
+            <button class="nav-btn" data-target="acoes-page">Ações Rápidas</button>
+            <button class="nav-btn" data-target="config-page">Configurações</button>
+        </div>
+        <button id="btn-recolher-menu" class="nav-btn">« Recolher Menu</button>
+    </aside>
+
+    <div id="main-content-area">
+
+        <!-- DASHBOARD -->
+        <div id="dashboard-page" class="content-page">
+            <header>
+                <h1 id="header-razao-social">Meu Gestor MEI</h1>
+                <p id="header-info" style="margin: 5px 0 0 0; font-size: 0.9rem;"></p>
+            </header>
+            <main>
+                <section id="dashboard">
+                    <h2>Dashboard de Faturamento</h2>
+                    <div id="limite-anual"><span>Limite Anual (Proporcional):</span><strong id="valor-limite">R$ 0,00</strong></div>
+                    <div id="total-faturado"><span>Total Faturado (Receitas):</span><strong id="valor-total">R$ 0,00</strong></div>
+                    <div id="limite-restante"><span id="label-restante">Limite Restante:</span><strong id="valor-restante" class="verde">R$ 0,00</strong></div>
+                    <div id="aviso-excesso-receita" class="aviso"></div>
+                    <hr style="margin: 15px 0;">
+                    <div id="limite-compras"><span>Limite de Compras (80%):</span><strong id="valor-limite-compras">R$ 64.800,00</strong></div>
+                    <div id="total-comprado"><span>Total Comprado (Despesas):</span><strong id="valor-compras" class="vermelho">R$ 0,00</strong></div>
+                    <div id="aviso-excesso-compra" class="aviso"></div>
+                </section>
+                <section id="lembrete-das">
+                    <h2>Lembrete de Imposto</h2>
+                    <p>Não se esqueça de pagar seu DAS (imposto mensal) até o dia 20!</p>
+                </section>
+            </main>
+        </div>
+
+        <!-- LANÇAMENTOS -->
+        <div id="lancamentos-page" class="content-page">
+            <main>
+                <section id="nova-receita" class="form-section">
+                    <h2>Adicionar Nova Receita</h2>
+                    <form id="form-receita">
+                        <div><label for="descricao-receita">Descrição:</label><input type="text" id="descricao-receita" placeholder="Ex: Venda de produto X" required></div>
+                        <div><label for="valor-receita">Valor (R$):</label><input type="number" id="valor-receita" step="0.01" placeholder="Ex: 150.50" required></div>
+                        <button type="submit" class="btn btn-primario">Adicionar Receita</button>
+                    </form>
+                </section>
+                <section id="nova-compra" class="form-section">
+                    <h2>Adicionar Nova Compra</h2>
+                    <form id="form-compra">
+                        <div><label for="descricao-compra">Descrição:</label><input type="text" id="descricao-compra" placeholder="Ex: Compra de material" required></div>
+                        <div><label for="valor-compra">Valor (R$):</label><input type="number" id="valor-compra" step="0.01" placeholder="Ex: 50.00" required></div>
+                        <button type="submit" class="btn btn-compra">Adicionar Compra</button>
+                    </form>
+                </section>
+            </main>
+        </div>
+
+        <!-- HISTÓRICOS -->
+        <div id="historicos-page" class="content-page">
+            <main>
+                <section id="historico-receitas">
+                    <h2>Histórico de Receitas</h2>
+                    <div class="historico-container">
+                        <ul id="historico-lista-receitas" class="historico-lista"></ul>
+                        <p id="lista-vazia-receitas" class="lista-vazia">Nenhuma receita ainda.</p>
+                    </div>
+                </section>
+                <section id="historico-compras">
+                    <h2>Histórico de Compras</h2>
+                    <div class="historico-container">
+                        <ul id="historico-lista-compras" class="historico-lista"></ul>
+                        <p id="lista-vazia-compras" class="lista-vazia">Nenhuma compra ainda.</p>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- AÇÕES RÁPIDAS -->
+        <div id="acoes-page" class="content-page">
+            <main>
+                <section id="acoes-rapidas">
+                    <h2>Relatório e Ações</h2>
+                    <p>Acesse os portais oficiais do MEI para suas obrigações.</p>
+                    
+                    <a href="https://www.nfse.gov.br/EmissorNacional/Login?ReturnUrl=%2fEmissorNacional" target="_blank" 
+                    class="btn btn-success">Emitir Nota Fiscal (NFS-e)</a>
+                    
+                    <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao" 
+                    target="_blank" class="btn btn-warning">Pagar Guia (DAS Mensal)</a>
+                    
+                    <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/dasnsimei.app/Identificacao" 
+                    target="_blank" class="btn btn-dark-gray">Entregar Declaração Anual</a>
+                    
+                    <button id="btn-imprimir-relatorio" class="btn btn-relatorio">
+                        Imprimir Relatório (ou Salvar PDF)
+                    </button>
+                </section>
+            </main>
+        </div>
+
+        <!-- CONFIGURAÇÕES -->
+        <div id="config-page" class="content-page">
+            <main>
+                <section id="config">
+                    <h2>Configurações</h2>
+                    <p style="font-size: 0.9rem; color: #555;">
+                        Usando dados de: <strong id="cnpj-info"></strong>. <br>
+                        Se inseriu o CNPJ errado, clique abaixo para reconfigurar.
+                    </p>
+                    <button id="btn-resetar" class="btn-secundario">Resetar App</button>
+                </section>
+            </main>
+        </div>
+
     </div>
-  </div>
+</div>
 
-  <!-- Script será inserido abaixo -->
+<div id="relatorio-para-impressao"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- 1. Seletores de Elementos ---
+    
+    // Setup
+    const setupContainer = document.getElementById('setup-container');
+    const formSetup = document.getElementById('form-setup');
+    const inputCnpj = document.getElementById('cnpj');
+    const btnBuscarCnpj = document.getElementById('btn-buscar-cnpj');
+    const setupError = document.getElementById('setup-error');
+
+    // App
+    const appContainer = document.getElementById('app-container');
+    
+    // Header
+    const headerRazaoSocial = document.getElementById('header-razao-social');
+    const headerInfo = document.getElementById('header-info');
+    const cnpjInfo = document.getElementById('cnpj-info');
+    
+    // Dashboard Receitas
+    const displayLimite = document.getElementById('valor-limite');
+    const displayTotal = document.getElementById('valor-total');
+    const displayRestante = document.getElementById('valor-restante');
+    const avisoExcessoReceita = document.getElementById('aviso-excesso-receita');
+    const labelRestante = document.getElementById('label-restante');
+
+    // Dashboard Compras
+    const displayLimiteCompras = document.getElementById('valor-limite-compras');
+    const displayTotalCompras = document.getElementById('valor-compras');
+    const avisoExcessoCompra = document.getElementById('aviso-excesso-compra');
+
+    // Formulário Receita
+    const formReceita = document.getElementById('form-receita');
+    const inputDescricaoReceita = document.getElementById('descricao-receita');
+    const inputValorReceita = document.getElementById('valor-receita');
+
+    // Formulário Compra
+    const formCompra = document.getElementById('form-compra');
+    const inputDescricaoCompra = document.getElementById('descricao-compra');
+    const inputValorCompra = document.getElementById('valor-compra');
+
+    // Histórico Receita
+    const historicoListaReceitas = document.getElementById('historico-lista-receitas');
+    const listaVaziaReceitas = document.getElementById('lista-vazia-receitas');
+    
+    // Histórico Compra
+    const historicoListaCompras = document.getElementById('historico-lista-compras');
+    const listaVaziaCompras = document.getElementById('lista-vazia-compras');
+
+    // Config
+    const btnResetar = document.getElementById('btn-resetar');
+    
+    // Navegação (Páginas)
+    const navButtons = document.querySelectorAll('#sidebar-nav button.nav-btn');
+    const contentPages = document.querySelectorAll('.content-page');
+
+    // Toggle Menu
+    const btnRecolherMenu = document.getElementById('btn-recolher-menu');
+    const btnAbrirMenu = document.getElementById('btn-abrir-menu');
+    
+    // Impressão
+    const btnImprimirRelatorio = document.getElementById('btn-imprimir-relatorio');
+    const areaImpressao = document.getElementById('relatorio-para-impressao');
+
+
+    // --- 2. Variáveis Globais ---
+    let receitas = [];
+    let compras = [];
+    let empresaData = {};
+    let LIMITE_CALCULADO = 81000.00;
+    let LIMITE_EXCESSO_GRAVE = 97200.00;
+    let LIMITE_COMPRAS_80 = 64800.00;
+    
+    const formatarBRL = (valor) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    // --- 3. Funções de Lógica e Inicialização ---
+
+    function checarEstadoApp() {
+        const dadosSalvos = localStorage.getItem('empresaMEI');
+        if (dadosSalvos) {
+            empresaData = JSON.parse(dadosSalvos);
+            const receitasSalvas = localStorage.getItem(`receitas_${empresaData.cnpj}`);
+            const comprasSalvas = localStorage.getItem(`compras_${empresaData.cnpj}`);
+            receitas = receitasSalvas ? JSON.parse(receitasSalvas) : [];
+            compras = comprasSalvas ? JSON.parse(comprasSalvas) : [];
+            
+            appContainer.classList.remove('escondido');
+            setupContainer.classList.add('escondido');
+            
+            inicializarApp(empresaData);
+        } else {
+            setupContainer.classList.remove('escondido');
+            appContainer.classList.add('escondido');
+        }
+    }
+
+    async function handleBuscaCnpj(event) {
+        event.preventDefault();
+        const cnpjLimpo = inputCnpj.value.replace(/[^\d]/g, '');
+        if (cnpjLimpo.length !== 14) {
+            mostrarErroSetup('CNPJ inválido. Deve conter 14 números.');
+            return;
+        }
+        btnBuscarCnpj.disabled = true;
+        btnBuscarCnpj.textContent = 'Buscando...';
+        setupError.style.display = 'none';
+
+        try {
+            const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`);
+            if (!response.ok) throw new Error('CNPJ não encontrado ou API fora do ar.');
+            const data = await response.json();
+            if (!data.opcao_pelo_mei) {
+                throw new Error('Este CNPJ não é Optante pelo MEI. Este app é exclusivo para Microempreendedores Individuais.');
+            }
+            const novosDados = {
+                cnpj: data.cnpj,
+                razaoSocial: data.razao_social,
+                dataAbertura: data.data_inicio_atividade,
+                optanteMei: data.opcao_pelo_mei
+            };
+            localStorage.setItem('empresaMEI', JSON.stringify(novosDados));
+            empresaData = novosDados;
+            receitas = []; 
+            compras = [];
+            
+            checarEstadoApp();
+
+        } catch (error) {
+            mostrarErroSetup(error.message);
+        } finally {
+            btnBuscarCnpj.disabled = false;
+            btnBuscarCnpj.textContent = 'Buscar e Salvar';
+        }
+    }
+    
+    function mostrarErroSetup(mensagem) {
+        setupError.textContent = mensagem;
+        setupError.style.display = 'block';
+    }
+
+    function inicializarApp(dados) {
+        calcularLimiteProporcional(dados.dataAbertura);
+        
+        headerRazaoSocial.textContent = dados.razaoSocial;
+        headerInfo.textContent = `CNPJ: ${dados.cnpj} | Aberto em: ${new Date(dados.dataAbertura).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}`;
+        cnpjInfo.textContent = dados.cnpj;
+        displayLimite.textContent = formatarBRL(LIMITE_CALCULADO);
+        displayLimiteCompras.textContent = formatarBRL(LIMITE_COMPRAS_80);
+        
+        formReceita.addEventListener('submit', adicionarReceita);
+        formCompra.addEventListener('submit', adicionarCompra);
+        btnResetar.addEventListener('click', resetarApp);
+        btnImprimirRelatorio.addEventListener('click', gerarRelatorioVisual);
+        
+        setupNavigation();
+        setupMenuToggle();
+
+        atualizarDashboard();
+        renderizarHistoricoReceitas();
+        renderizarHistoricoCompras();
+    }
+
+    function calcularLimiteProporcional(dataAberturaStr) {
+        const dataAbertura = new Date(dataAberturaStr);
+        const anoAbertura = dataAbertura.getUTCFullYear();
+        const mesAbertura = dataAbertura.getUTCMonth() + 1;
+        const dataAtual = new Date();
+        const anoAtual = dataAtual.getFullYear();
+        const LIMITE_MENSAL = 6750.00;
+        const LIMITE_ANUAL_CHEIO = 81000.00;
+
+        if (anoAbertura < anoAtual) {
+            LIMITE_CALCULADO = LIMITE_ANUAL_CHEIO;
+        } else {
+            const mesesAtividade = 12 - mesAbertura + 1;
+            LIMITE_CALCULADO = mesesAtividade * LIMITE_MENSAL;
+        }
+        LIMITE_EXCESSO_GRAVE = LIMITE_CALCULADO * 1.20;
+        LIMITE_COMPRAS_80 = LIMITE_CALCULADO * 0.80;
+    }
+
+    // --- 4. Funções Principais do App ---
+
+    function salvarDados() {
+        localStorage.setItem(`receitas_${empresaData.cnpj}`, JSON.stringify(receitas));
+        localStorage.setItem(`compras_${empresaData.cnpj}`, JSON.stringify(compras));
+    }
+
+    function atualizarDashboard() {
+        // Receitas
+        const totalFaturado = receitas.reduce((total, receita) => total + receita.valor, 0);
+        displayTotal.textContent = formatarBRL(totalFaturado);
+        displayRestante.classList.remove('verde', 'laranja', 'vermelho');
+        avisoExcessoReceita.style.display = 'none';
+
+        if (totalFaturado > LIMITE_CALCULADO) {
+            labelRestante.textContent = 'Limite Excedido:';
+            const valorExcedido = totalFaturado - LIMITE_CALCULADO;
+            const percentualExcedido = (valorExcedido / LIMITE_CALCULADO) * 100;
+            displayRestante.textContent = `${formatarBRL(valorExcedido)} (${percentualExcedido.toFixed(2)}%)`;
+            
+            if (totalFaturado > LIMITE_EXCESSO_GRAVE) {
+                displayRestante.classList.add('vermelho');
+                avisoExcessoReceita.textContent = 'ATENÇÃO: Excesso grave (> 20%). Você foi desenquadrado retroativamente. Procure um contador URGENTE.';
+                avisoExcessoReceita.className = 'aviso vermelho';
+                avisoExcessoReceita.style.display = 'block';
+            } else {
+                displayRestante.classList.add('laranja');
+                avisoExcessoReceita.textContent = 'Atenção: Você ultrapassou o limite. Deverá pagar um DAS extra sobre o valor excedido e será desenquadrado no próximo ano.';
+                avisoExcessoReceita.className = 'aviso laranja';
+                avisoExcessoReceita.style.display = 'block';
+            }
+        } else {
+            labelRestante.textContent = 'Limite Restante:';
+            const limiteRestante = LIMITE_CALCULADO - totalFaturado;
+            displayRestante.textContent = formatarBRL(limiteRestante);
+            displayRestante.classList.add('verde');
+        }
+        
+        // Compras
+        const totalComprado = compras.reduce((total, compra) => total + compra.valor, 0);
+        displayTotalCompras.textContent = formatarBRL(totalComprado);
+        avisoExcessoCompra.style.display = 'none';
+        
+        if (totalComprado > LIMITE_COMPRAS_80) {
+            avisoExcessoCompra.textContent = 'ATENÇÃO: O total de compras está muito alto (maior que 80% do limite). Isso pode levar ao desenquadramento por suspeita de omissão de receita.';
+            avisoExcessoCompra.className = 'aviso laranja';
+            avisoExcessoCompra.style.display = 'block';
+        }
+    }
+
+    function renderizarHistoricoReceitas() {
+        historicoListaReceitas.innerHTML = '';
+        if (receitas.length === 0) {
+            listaVaziaReceitas.style.display = 'block';
+        } else {
+            listaVaziaReceitas.style.display = 'none';
+            receitas.slice().reverse().forEach(receita => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="descricao">${receita.descricao}</span>
+                    <strong class="valor-receita">${formatarBRL(receita.valor)}</strong>
+                `;
+                historicoListaReceitas.appendChild(li);
+            });
+        }
+    }
+    
+    function renderizarHistoricoCompras() {
+        historicoListaCompras.innerHTML = '';
+        if (compras.length === 0) {
+            listaVaziaCompras.style.display = 'block';
+        } else {
+            listaVaziaCompras.style.display = 'none';
+            compras.slice().reverse().forEach(compra => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="descricao">${compra.descricao}</span>
+                    <strong class="valor-compra">${formatarBRL(compra.valor)}</strong>
+                `;
+                historicoListaCompras.appendChild(li);
+            });
+        }
+    }
+
+    function adicionarReceita(event) {
+        event.preventDefault(); 
+        const descricao = inputDescricaoReceita.value;
+        const valor = parseFloat(inputValorReceita.value);
+        if (!descricao || !valor || valor <= 0) {
+            alert('Por favor, preencha uma descrição e um valor válido para a RECEITA.');
+            return;
+        }
+        const novaReceita = { id: Date.now(), descricao: descricao, valor: valor };
+        receitas.push(novaReceita);
+        inputDescricaoReceita.value = '';
+        inputValorReceita.value = '';
+
+        salvarDados();
+        atualizarDashboard();
+        renderizarHistoricoReceitas();
+    }
+    
+    function adicionarCompra(event) {
+        event.preventDefault(); 
+        const descricao = inputDescricaoCompra.value;
+        const valor = parseFloat(inputValorCompra.value);
+        if (!descricao || !valor || valor <= 0) {
+            alert('Por favor, preencha uma descrição e um valor válido para a COMPRA.');
+            return;
+        }
+        const novaCompra = { id: Date.now(), descricao: descricao, valor: valor };
+        compras.push(novaCompra);
+        inputDescricaoCompra.value = '';
+        inputValorCompra.value = '';
+
+        salvarDados();
+        atualizarDashboard();
+        renderizarHistoricoCompras();
+    }
+
+    function resetarApp() {
+        if (confirm('Tem certeza que deseja resetar o app? Você precisará inserir o CNPJ novamente e TODOS OS DADOS DE RECEITA E COMPRA SERÃO APAGADOS.')) {
+            localStorage.removeItem('empresaMEI');
+            localStorage.removeItem(`receitas_${empresaData.cnpj}`);
+            localStorage.removeItem(`compras_${empresaData.cnpj}`);
+            window.location.reload();
+        }
+    }
+    
+    // --- 5. FUNÇÕES DE NAVEGAÇÃO ---
+    
+    function setupNavigation() {
+        const startPage = 'dashboard-page';
+        document.querySelector(`.nav-btn[data-target="${startPage}"]`).classList.add('active');
+        document.getElementById(startPage).classList.add('active');
+        
+        navButtons.forEach(button => {
+            if(button.id === 'btn-recolher-menu') return;
+
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-target');
+                contentPages.forEach(page => page.classList.remove('active'));
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
+                button.classList.add('active');
+            });
+        });
+    }
+
+    function setupMenuToggle() {
+        btnRecolherMenu.addEventListener('click', () => {
+            document.body.classList.add('menu-recolhido');
+        });
+        
+        btnAbrirMenu.addEventListener('click', () => {
+            document.body.classList.remove('menu-recolhido');
+        });
+    }
+
+    // === FUNÇÃO DE IMPRESSÃO ===
+    function gerarRelatorioVisual() {
+        const totalFaturado = receitas.reduce((total, receita) => total + receita.valor, 0);
+        const totalComprado = compras.reduce((total, compra) => total + compra.valor, 0);
+
+        let html = `
+            <h1>Relatório de Gestão MEI</h1>
+            <p><strong>Razão Social:</strong> ${empresaData.razaoSocial}</p>
+            <p><strong>CNPJ:</strong> ${empresaData.cnpj}</p>
+            <p><strong>Data de Emissão:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+
+            <h2>Resumo Financeiro</h2>
+            <table>
+                <thead>
+                    <tr><th>Item</th><th>Valor</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Limite Anual (Proporcional)</td>
+                        <td>${formatarBRL(LIMITE_CALCULADO)}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Faturado (Receitas)</td>
+                        <td>${formatarBRL(totalFaturado)}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td><strong>${labelRestante.textContent}</strong></td>
+                        <td><strong>${displayRestante.textContent}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Limite de Compras (80%)</td>
+                        <td>${formatarBRL(LIMITE_COMPRAS_80)}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td><strong>Total de Compras</strong></td>
+                        <td><strong>${formatarBRL(totalComprado)}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Histórico de Receitas</h2>
+            <table>
+                <thead>
+                    <tr><th>Descrição</th><th>Valor</th></tr>
+                </thead>
+                <tbody>
+                    ${receitas.length === 0 ? '<tr><td colspan="2">Nenhuma receita registrada.</td></tr>' : 
+                        receitas.map(r => `<tr><td>${r.descricao}</td><td>${formatarBRL(r.valor)}</td></tr>`).join('')}
+                    <tr class="total-row">
+                        <td><strong>Total de Receitas</strong></td>
+                        <td><strong>${formatarBRL(totalFaturado)}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Histórico de Compras</h2>
+            <table>
+                <thead>
+                    <tr><th>Descrição</th><th>Valor</th></tr>
+                </thead>
+                <tbody>
+                    ${compras.length === 0 ? '<tr><td colspan="2">Nenhuma compra registrada.</td></tr>' : 
+                        compras.map(c => `<tr><td>${c.descricao}</td><td>${formatarBRL(c.valor)}</td></tr>`).join('')}
+                    <tr class="total-row">
+                        <td><strong>Total de Compras</strong></td>
+                        <td><strong>${formatarBRL(totalComprado)}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+        areaImpressao.innerHTML = html;
+        window.print();
+    }
+
+    // --- 6. Ponto de Entrada ---
+    formSetup.addEventListener('submit', handleBuscaCnpj);
+    checarEstadoApp(); // Inicia o app
+});
+</script>
 
 </body>
 </html>
