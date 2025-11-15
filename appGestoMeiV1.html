@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestor MEI</title>
+<!-- Estilos originais mantidos -->
+<style>
+/* TODO: inserir aqui todo o seu CSS original sem alterações */
+</style>
+</head>
+<body>
+
+<!-- === SETUP / LOGIN === -->
+<div id="setup-container">
+    <header><h1>Bem-vindo ao Gestor MEI</h1></header>
+    <main>
+        <section id="setup">
+            <h2>Entrar</h2>
+
+            <!-- Botão Login Google -->
+            <button class="btn btn-primario" onclick="loginWithGoogle()">Entrar com Google</button>
+
+            <p style="margin-top:20px; font-size:0.9rem; color:#666">Após o login, seus dados serão carregados automaticamente.</p>
+        </section>
+    </main>
+</div>
+
+<!-- === APP PRINCIPAL === -->
+<div id="app-container" class="escondido">
+
+    <aside id="sidebar-nav">
+        <h1>Meu Gestor MEI</h1>
+        <div id="nav-buttons-container">
+            <button class="nav-btn" data-target="dashboard-page">Dashboard</button>
+            <button class="nav-btn" data-target="lancamentos-page">Lançamentos</button>
+            <button class="nav-btn" data-target="historicos-page">Históricos</button>
+            <button class="nav-btn" data-target="acoes-page">Ações Rápidas</button>
+            <button class="nav-btn" data-target="config-page">Configurações</button>
+        </div>
+        <button id="btn-recolher-menu" class="nav-btn">« Recolher Menu</button>
+    </aside>
+
+    <div id="main-content-area">
+
+        <!-- DASHBOARD -->
+        <div id="dashboard-page" class="content-page">
+            <header>
+                <h1 id="header-razao-social">Meu Gestor MEI</h1>
+                <p id="header-info" style="margin: 5px 0 0 0; font-size: 0.9rem;"></p>
+            </header>
+            <main>
+                <section id="dashboard">
+                    <h2>Dashboard de Faturamento</h2>
+                    <div><span>Limite Anual:</span><strong id="valor-limite">R$ 0,00</strong></div>
+                    <div><span>Total Faturado:</span><strong id="valor-total">R$ 0,00</strong></div>
+                    <div><span id="label-restante">Limite Restante:</span><strong id="valor-restante" class="verde">R$ 0,00</strong></div>
+                    <div id="aviso-excesso-receita" class="aviso"></div>
+                    <hr>
+                    <div><span>Limite de Compras (80%):</span><strong id="valor-limite-compras">R$ 0,00</strong></div>
+                    <div><span>Total Comprado:</span><strong id="valor-compras" class="vermelho">R$ 0,00</strong></div>
+                    <div id="aviso-excesso-compra" class="aviso"></div>
+                </section>
+            </main>
+        </div>
+
+        <!-- LANÇAMENTOS -->
+        <div id="lancamentos-page" class="content-page">
+            <main>
+                <section>
+                    <h2>Adicionar Receita</h2>
+                    <form id="form-receita">
+                        <input id="descricao-receita" placeholder="Descrição" required>
+                        <input id="valor-receita" type="number" step="0.01" placeholder="Valor" required>
+                        <button class="btn btn-primario" type="submit">Adicionar Receita</button>
+                    </form>
+                </section>
+                <section>
+                    <h2>Adicionar Compra</h2>
+                    <form id="form-compra">
+                        <input id="descricao-compra" placeholder="Descrição" required>
+                        <input id="valor-compra" type="number" step="0.01" placeholder="Valor" required>
+                        <button class="btn btn-compra" type="submit">Adicionar Compra</button>
+                    </form>
+                </section>
+            </main>
+        </div>
+
+        <!-- HISTÓRICOS -->
+        <div id="historicos-page" class="content-page">
+            <main>
+                <section>
+                    <h2>Histórico de Receitas</h2>
+                    <ul id="historico-lista-receitas"></ul>
+                </section>
+                <section>
+                    <h2>Histórico de Compras</h2>
+                    <ul id="historico-lista-compras"></ul>
+                </section>
+            </main>
+        </div>
+
+        <!-- AÇÕES -->
+        <div id="acoes-page" class="content-page">
+            <main>
+                <section>
+                    <h2>Ações Rápidas</h2>
+                    <button id="btn-imprimir-relatorio" class="btn btn-relatorio">Imprimir Relatório</button>
+                </section>
+            </main>
+        </div>
+
+        <!-- CONFIGURAÇÕES -->
+        <div id="config-page" class="content-page">
+            <main>
+                <section>
+                    <h2>Configurações</h2>
+                    <button class="btn-secundario" onclick="logout()">Sair</button>
+                </section>
+            </main>
+        </div>
+
+    </div>
+</div>
+
+<!-- =========================================================== -->
+<!--   RELATÓRIO PARA IMPRESSÃO                                  -->
+<!-- =========================================================== -->
+<div id="relatorio-para-impressao"></div>
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- =========================================================== -->
+<!--   SCRIPT FINAL: LOGIN GOOGLE + API DJANGO + APP MEI          -->
+<!-- =========================================================== -->
+<script>
+/* CONFIG SUPABASE */
+const SUPABASE_URL = "https://zrpxtooampraytmkywhl.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpycHh0b29hbXByYXl0bWt5d2hsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzAzMjgxNiwiZXhwIjoyMDc4NjA4ODE2fQ.uqKGpYaZ6mCac7ISyTl_4wqAObNJ5mbReoxdj3XrvzI";
+const API_BASE = "https://gestor-mei-backend.onrender.com/api/";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let receitas = [];
+let compras = [];
+let empresaData = {};
+let currentSession = null;
+let currentUser = null;
+
+/* LOGIN GOOGLE */
+async function loginWithGoogle(){
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.href }
+    });
+    if(error) alert(error.message);
+}
+
+/* LOGOUT */
+async function logout(){
+    await supabaseClient.auth.signOut();
+    localStorage.clear();
+    window.location.reload();
+}
+
+/* STATE CHANGE */
+supabaseClient.auth.onAuthStateChange(async(event, session)=>{
+    currentSession = session;
+    currentUser = session?.user ?? null;
+
+    if(currentUser){
+        document.getElementById("setup-container").classList.add("escondido");
+        document.getElementById("app-container").classList.remove("escondido");
+        await carregarDadosIniciais();
+    } else {
+        document.getElementById("setup-container").classList.remove("escondido");
+        document.getElementById("app-container").classList.add("escondido");
+    }
+});
+
+/* API FETCH */
+async function apiFetch(path, method="GET", body=null){
+    if(!currentSession) throw new Error("Não autenticado");
+    const res = await fetch(API_BASE + path,{
+        method,
+        headers:{
+            "Content-Type":"application/json",
+            "Authorization":"Bearer " + currentSession.access_token
+        },
+        body: body ? JSON.stringify(body) : null
+    });
+    if(!res.ok){
+        const t = await res.text();
+        throw new Error(t);
+    }
+    return res.json();
+}
+
+/* CARREGAR PERFIL E DADOS */
+async function carregarDadosIniciais(){
+    const me = await apiFetch("me/");
+    empresaData = me.profile || {};
+
+    receitas = await apiFetch("receitas/list/");
+    compras  = await apiFetch("compras/list/");
+
+    atualizarDashboard();
+    renderizarHistoricoReceitas();
+    renderizarHistoricoCompras();
+}
+
+/* ADD RECEITA */
+document.getElementById("form-receita").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const descricao = document.getElementById("descricao-receita").value;
+    const valor = parseFloat(document.getElementById("valor-receita").value);
+    const data = await apiFetch("receitas/","POST",{descricao,valor});
+    receitas.push(data[0]);
+    atualizarDashboard();
+    renderizarHistoricoReceitas();
+});
+
+/* ADD COMPRA */
+document.getElementById("form-compra").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const descricao = document.getElementById("descricao-compra").value;
+    const valor = parseFloat(document.getElementById("valor-compra").value);
+    const data = await apiFetch("compras/","POST",{descricao,valor});
+    compras.push(data[0]);
+    atualizarDashboard();
+    renderizarHistoricoCompras();
+});
+
+/* FUNÇÕES LOCAIS ORIGINAIS */
+function formatarBRL(v){return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}    
+function atualizarDashboard(){/* TODO replicar sua lógica original */}
+function renderizarHistoricoReceitas(){/* TODO replicar sua lógica original */}
+function renderizarHistoricoCompras(){/* TODO replicar sua lógica original */}
+</script>
+
+</body>
+</html>
