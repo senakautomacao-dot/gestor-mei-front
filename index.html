@@ -55,12 +55,13 @@
     .sidebar .small{font-size:0.9rem;color:rgba(255,255,255,0.9)}
     .sidebar .footer{margin-top:auto;font-size:0.85rem;color:rgba(255,255,255,0.85)}
 
-    /* Main content */
+    /* Main */
     .main{
       flex:1;
       padding:24px;
       overflow:auto;
     }
+
     header.app-header{
       background:linear-gradient(90deg,var(--cor-primaria),#0056b3);
       color:white;
@@ -71,40 +72,18 @@
       align-items:center;
       margin-bottom:18px;
     }
-    header.app-header .left{display:flex;gap:12px;align-items:center}
-    header.app-header h1{margin:0;font-size:1.25rem}
-    header.app-header .actions{display:flex;gap:10px;align-items:center}
-
-    /* Cards / sections */
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}
-    .card{background:var(--card);padding:16px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.04)}
-    .card h3{margin:0 0 8px 0;color:var(--cor-primaria)}
-    .big{font-size:1.5rem;font-weight:700}
-
-    /* Forms */
-    label{display:block;font-weight:600;margin-bottom:6px}
-    input[type="text"], input[type="number"], input[type="tel"]{
-      width:100%;padding:10px;border:1px solid var(--borda);border-radius:6px;margin-bottom:10px;
+    header.app-header h1{
+      margin:0;font-size:1.25rem
     }
-    .btn-primary{
-      background:var(--cor-primaria);color:white;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:700;
+
+    .card{
+      background:var(--card);
+      padding:16px;
+      border-radius:8px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.04)
     }
-    .btn-ghost{background:transparent;border:2px solid var(--cor-primaria);color:var(--cor-primaria);padding:8px 10px;border-radius:8px;cursor:pointer}
 
-    /* History list */
-    .history{max-height:320px;overflow:auto;border:1px solid #f0f0f0;border-radius:6px;padding:6px}
-    .history .row{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #f7f7f7}
-    .history .row:last-child{border-bottom:none}
-
-    .hidden{display:none !important}
-    .center{display:flex;align-items:center;justify-content:center}
-
-    /* responsive */
-    @media (max-width:1000px){
-      .grid{grid-template-columns:repeat(1,1fr)}
-      .sidebar{width:100%;flex-direction:row;gap:6px;align-items:center;padding:12px;overflow:auto}
-      body{flex-direction:column}
-    }
+    .hidden{display:none!important}
   </style>
 </head>
 <body>
@@ -120,7 +99,7 @@
     <button class="btn" data-target="lancamentos" onclick="showPage('lancamentos')">Lançamentos</button>
     <button class="btn" data-target="historico" onclick="showPage('historico')">Histórico</button>
     <button class="btn" data-target="cnpj" onclick="showPage('cnpj')">Consulta CNPJ (BrasilAPI)</button>
-    <button class="btn" data-target="acoes" onclick="showPage('acoes')">Ações Rápidas</button> (BrasilAPI)</button>
+    <button class="btn" data-target="acoes" onclick="showPage('acoes')">Ações Rápidas</button>
 
     <div style="height:10px"></div>
     <button id="btn-logout" class="btn hidden" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.25)" onclick="logout()">Sair</button>
@@ -131,44 +110,42 @@
   <!-- MAIN -->
   <main class="main" id="main">
     <header class="app-header">
-      <div class="left">
-        <h1>Painel do MEI</h1>
-      </div>
-      <div class="actions">
-        <button id="btn-login" class="btn-primary">Entrar com Google</button>
-      </div>
+      <h1>Painel do MEI</h1>
+      <button id="btn-login" class="btn-primary">Entrar com Google</button>
     </header>
 
-    <!-- ====== LOGIN SCREEN (visível inicialmente) ====== -->
+    <!-- TELA LOGIN -->
     <section id="login-screen" class="card">
       <h2>Bem-vindo ao Gestor MEI</h2>
       <p>Faça login com sua conta Google para continuar.</p>
-      <div style="margin-top:14px">
-        <button id="login-start" class="btn-primary">Entrar com Google</button>
-      </div>
-      <div id="login-info" style="margin-top:12px;color:#666;font-size:0.95rem">
-        Após o login, você precisará fornecer seu CNPJ para verificar se é optante pelo MEI.
-      </div>
+      <button id="login-start" class="btn-primary">Entrar com Google</button>
     </section>
 
-    <!-- ====== CNPJ CHECK (após login, obrigatório) ====== -->
+    <!-- TELA CNPJ -->
     <section id="cnpj-screen" class="card hidden">
       <h3>Verificação obrigatória: informe seu CNPJ</h3>
       <p>O aplicativo é exclusivo para Microempreendedores Individuais (MEI).</p>
+
       <label for="cnpj-input">CNPJ (somente números)</label>
       <input id="cnpj-input" type="text" placeholder="00000000000191">
+
       <div style="display:flex;gap:10px">
         <button class="btn-primary" onclick="consultarCNPJ(true)">Consultar e validar</button>
         <button class="btn-ghost" onclick="skipCNPJ()">Cancelar (sair)</button>
       </div>
+
       <div id="cnpj-result" style="margin-top:16px"></div>
     </section>
 
-    <!-- ====== APP AREA (escondida até CNPJ ser MEI) ====== -->
+
+    <!-- ÁREA PRINCIPAL DO APP (liberada somente após validar MEI) -->
     <section id="app-area" class="hidden">
-      <!-- Dashboard -->
+
+      <!-- DASHBOARD -->
       <section id="dashboard" class="card" style="display:block;">
-        <div class="grid">
+        <h3>Dashboard</h3>
+
+        <div class="grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px">
           <div class="card">
             <h3>Total Faturado</h3>
             <div class="big" id="total-receitas-display">R$ 0,00</div>
@@ -189,13 +166,16 @@
         </div>
       </section>
 
-      <!-- Lançamentos -->
+
+      <!-- LANÇAMENTOS -->
       <section id="lancamentos" class="card" style="display:none;margin-top:18px;">
         <h3>Adicionar Receita</h3>
         <label for="descricao-receita">Descrição</label>
         <input id="descricao-receita" type="text" placeholder="Ex: Venda do mês">
+
         <label for="valor-receita">Valor (R$)</label>
         <input id="valor-receita" type="number" step="0.01" placeholder="1500.00">
+
         <button class="btn-primary" onclick="adicionarReceita()">Adicionar Receita</button>
 
         <hr style="margin:18px 0">
@@ -203,377 +183,385 @@
         <h3>Adicionar Compra</h3>
         <label for="descricao-compra">Descrição</label>
         <input id="descricao-compra" type="text" placeholder="Ex: Compra de materiais">
+
         <label for="valor-compra">Valor (R$)</label>
         <input id="valor-compra" type="number" step="0.01" placeholder="200.00">
+
         <button class="btn-primary" onclick="adicionarCompra()">Adicionar Compra</button>
       </section>
 
-      <!-- Histórico -->
-      $&
+
+      <!-- HISTÓRICO -->
+      <section id="historico" class="card" style="display:none;margin-top:18px;">
+        <h3>Histórico</h3>
+
+        <div style="display:flex;gap:10px;margin-bottom:10px">
+          <div style="flex:1">
+            <label>Filtrar por</label>
+            <select id="filtro-tipo">
+              <option value="all">Todos</option>
+              <option value="receitas">Receitas</option>
+              <option value="compras">Compras</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="history" id="history-list" style="max-height:320px;overflow:auto;border:1px solid #f0f0f0;border-radius:6px;padding:6px">
+          <div class="row"><div>Nenhum lançamento.</div></div>
+        </div>
+      </section>
+
 
       <!-- AÇÕES RÁPIDAS -->
       <section id="acoes" class="card" style="display:none;margin-top:18px;">
         <h3>Ações Rápidas</h3>
-        <a href="https://www.nfse.gov.br/EmissorNacional/Login?ReturnUrl=%2fEmissorNacional" target="_blank" class="btn-primary" style="display:block;margin-bottom:10px;text-align:center;">Emitir Nota Fiscal (NFS-e)</a>
-        <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao" target="_blank" class="btn-primary" style="background:#fd7e14;display:block;margin-bottom:10px;text-align:center;">Pagar Guia (DAS Mensal)</a>
-        <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/dasnsimei.app/Identificacao" target="_blank" class="btn-primary" style="background:#343a40;display:block;margin-bottom:10px;text-align:center;">Entregar Declaração Anual</a>
-        <button class="btn-primary" style="background:#17a2b8;text-align:center;" onclick="window.print()">Imprimir Relatório</button>
-      </section>
-    </section>
 
+        <a href="https://www.nfse.gov.br/EmissorNacional/Login?ReturnUrl=%2fEmissorNacional"
+           target="_blank"
+           class="btn-primary"
+           style="display:block;margin-bottom:10px;text-align:center;">
+           Emitir Nota Fiscal (NFS-e)
+        </a>
+
+        <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao"
+           target="_blank"
+           class="btn-primary"
+           style="background:#fd7e14;display:block;margin-bottom:10px;text-align:center;">
+           Pagar Guia (DAS Mensal)
+        </a>
+
+        <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/dasnsimei.app/Identificacao"
+           target="_blank"
+           class="btn-primary"
+           style="background:#343a40;display:block;margin-bottom:10px;text-align:center;">
+           Entregar Declaração Anual
+        </a>
+
+        <button class="btn-primary"
+                style="background:#17a2b8;text-align:center;"
+                onclick="window.print()">
+          Imprimir Relatório
+        </button>
+      </section>
+
+    </section> <!-- fim app-area -->
   </main>
 
-  <script>
-  /***** CONFIG - troque estes valores pelos seus reais *****/
-  const SUPABASE_URL = "https://zrpxtooampraytmkywhl.supabase.co"; // substitua se necessário
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpycHh0b29hbXByYXl0bWt5d2hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwMzI4MTYsImV4cCI6MjA3ODYwODgxNn0.OHGbsF5njvJm6kfeGWeEwAR3Ewzk0JrTVwubiqWNa3g"; // <<== substituir pela sua ANON key pública
-  const API_BASE = "https://gestor-mei-backend.onrender.com/api/"; // <<== substituir se necessário
-  /*********************************************************/
+<script>
+/***** CONFIG SUA ***** */
+const SUPABASE_URL = "https://zrpxtooampraytmkywhl.supabase.co";  
+const SUPABASE_ANON_KEY = "SUA_ANON_KEY_AQUI"; 
+const API_BASE = "https://gestor-mei-backend.onrender.com/api/";
+/*******************************************************/
 
-  // cria cliente supabase (usar window.supabase para evitar shadowing/TDZ)
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+/* Inicializar Supabase Corretamente */
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // estado
-  let session = null;
-  let user = null;
-  let receitas = [];
-  let compras = [];
+/* Estados globais */
+let session = null;
+let user = null;
+let receitas = [];
+let compras = [];
 
-  // refs
-  const sidebar = document.getElementById('sidebar');
-  const btnLogin = document.getElementById('btn-login');
-  const loginStart = document.getElementById('login-start');
-  const btnLogout = document.getElementById('btn-logout');
-  const userBlock = document.getElementById('user-block');
+/* Referências */
+const sidebar = document.getElementById('sidebar');
+const btnLogin = document.getElementById('btn-login');
+const loginStart = document.getElementById('login-start');
+const btnLogout = document.getElementById('btn-logout');
+const userBlock = document.getElementById('user-block');
 
-  // Inicialização: captura sessão (pode vir do redirect)
-  (async function init(){
-    try {
-      const { data } = await supabaseClient.auth.getSession();
-      session = data.session;
-      user = session?.user ?? null;
-    } catch(e){
-      session = null; user = null;
-    }
-    // atualiza UI inicial
+/* ---- INICIALIZAÇÃO ---- */
+(async function init(){
+  const { data } = await supabaseClient.auth.getSession();
+  session = data.session;
+  user = session?.user ?? null;
+
+  updateAuthUI();
+
+  supabaseClient.auth.onAuthStateChange((event, s) => {
+    session = s;
+    user = s?.user ?? null;
     updateAuthUI();
+    if (user) showCNPJScreen();
+  });
 
-    // listener de auth (cuidado: redirecionamento também roda getSession)
-    supabaseClient.auth.onAuthStateChange((event, s) => {
-      session = s;
-      user = s?.user ?? null;
-      updateAuthUI();
-      if(user){
-        // após login, obrigamos a verificação de CNPJ
-        showCNPJScreen();
-      }
-    });
+  if (user) showCNPJScreen();
+})();
 
-    // Se já está logado, forçamos CNPJ screen
-    if(user){
-      showCNPJScreen();
+/* ---- UI DE AUTENTICAÇÃO ---- */
+function updateAuthUI(){
+  if (user){
+    userBlock.innerHTML = `
+      <div style="font-weight:700">${escapeHtml(user.email)}</div>
+      <div class="small">ID: ${escapeHtml(user.id)}</div>
+    `;
+    btnLogout.classList.remove("hidden");
+    btnLogin.classList.add("hidden");
+    loginStart.classList.add("hidden");
+  } else {
+    userBlock.innerHTML = `<div class="small">Não autenticado</div>`;
+    btnLogout.classList.add("hidden");
+    btnLogin.classList.remove("hidden");
+    loginStart.classList.remove("hidden");
+    showOnlyLogin();
+  }
+}
+
+/* ---- LOGIN ---- */
+async function startLogin(){
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: window.location.origin }
+  });
+  if (error) alert("Erro no login: " + error.message);
+}
+btnLogin.addEventListener('click', startLogin);
+loginStart.addEventListener('click', startLogin);
+
+/* ---- LOGOUT ---- */
+async function logout(){
+  await supabaseClient.auth.signOut();
+  session = null;
+  user = null;
+  updateAuthUI();
+  window.location.href = window.location.origin;
+}
+
+/* ---- TELAS ---- */
+function showOnlyLogin(){
+  document.getElementById("login-screen").classList.remove("hidden");
+  document.getElementById("cnpj-screen").classList.add("hidden");
+  document.getElementById("app-area").classList.add("hidden");
+  sidebar.classList.add("hidden");
+}
+
+function showCNPJScreen(){
+  document.getElementById("login-screen").classList.add("hidden");
+  document.getElementById("cnpj-screen").classList.remove("hidden");
+  document.getElementById("app-area").classList.add("hidden");
+  sidebar.classList.add("hidden");
+  document.getElementById("cnpj-result").innerHTML = "";
+  document.getElementById("cnpj-input").value = "";
+}
+
+/* ---- VALIDAÇÃO DE MEI (CORRETA) ---- */
+function isMEI(data){
+  if (!data) return false;
+
+  if (data.opcao_pelo_mei === true) return true;
+  if (data.simples?.opcao_mei === true) return true;
+  if (data.simples?.simples_mei === true) return true;
+
+  return false;
+}
+
+/* ---- CONSULTA CNPJ ---- */
+async function consultarCNPJ(doLogoutIfNotMEI=true){
+  const out = document.getElementById('cnpj-result');
+  const cnpj = document.getElementById('cnpj-input').value.replace(/\D/g, '');
+
+  if (cnpj.length !== 14){
+    out.innerHTML = "<span style='color:#a00'>CNPJ inválido.</span>";
+    return;
+  }
+
+  out.innerHTML = "Buscando...";
+
+  try {
+    const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
+    if (!response.ok){
+      out.innerHTML = "<span style='color:#a00'>Erro na API.</span>";
+      return;
     }
-  })();
 
-  // Atualiza UI de autenticação
-  function updateAuthUI(){
-    if(user){
-      // o usuário está autenticado, mostrar email no sidebar quando liberado
-      userBlock.innerHTML = `<div style="font-weight:700">${escapeHtml(user.email)}</div><div class="small">ID: ${escapeHtml(user.id)}</div>`;
-      btnLogout.classList.remove('hidden');
-      btnLogin.classList.add('hidden');
-      loginStart.classList.add('hidden');
+    const data = await response.json();
+    const mei = isMEI(data);
+
+    out.innerHTML = `
+      <strong>${escapeHtml(data.nome || data.razao_social || "")}</strong><br>
+      Situação: ${data.situacao || "N/D"}<br>
+      Abertura: ${data.data_abertura || data.data_inicio_atividade || ""}
+    `;
+
+    if (mei){
+      out.innerHTML += `<div style="color:var(--cor-verde);font-weight:700;margin-top:8px;">CNPJ validado como MEI. Acesso liberado!</div>`;
+      unlockApp();
     } else {
-      userBlock.innerHTML = `<div class="small">Não autenticado</div>`;
-      btnLogout.classList.add('hidden');
-      btnLogin.classList.remove('hidden');
-      loginStart.classList.remove('hidden');
-      // garantir que o app esteja no estado inicial (login)
-      showOnlyLogin();
-    }
-  }
-
-  // Login
-  async function startLogin(){
-    // usa redirecionamento (vai para Google e volta)
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin } // volta para a raiz
-    });
-    if(error) alert('Erro no login: ' + error.message);
-  }
-  loginStart.addEventListener('click', startLogin);
-  btnLogin.addEventListener('click', startLogin);
-
-  // logout
-  async function logout(){
-    try {
-      await supabaseClient.auth.signOut();
-    } catch(e){ console.warn('logout erro', e); }
-    session = null; user = null;
-    updateAuthUI();
-    // voltar para estado inicial (login)
-    window.location.href = window.location.origin;
-  }
-
-  // Forçar exibir só tela de login
-  function showOnlyLogin(){
-    document.getElementById('login-screen').classList.remove('hidden');
-    document.getElementById('cnpj-screen').classList.add('hidden');
-    document.getElementById('app-area').classList.add('hidden');
-    sidebar.classList.add('hidden');
-  }
-
-  // Mostrar tela de CNPJ após login
-  function showCNPJScreen(){
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('cnpj-screen').classList.remove('hidden');
-    document.getElementById('app-area').classList.add('hidden');
-    sidebar.classList.add('hidden'); // sidebar ficará escondido até liberação
-    // limpa resultado anterior
-    document.getElementById('cnpj-result').innerText = '';
-    document.getElementById('cnpj-input').value = '';
-  }
-
-  // Quando CNPJ validado como MEI -> libera app
-  function unlockApp(cnpjData){
-    // mostra sidebar e app
-    document.getElementById('cnpj-screen').classList.add('hidden');
-    document.getElementById('app-area').classList.remove('hidden');
-    sidebar.classList.remove('hidden');
-    // exibir dashboard por padrão
-    showPage('dashboard');
-    // atualizar UI com info já carregada
-    carregarDadosIniciais();
-  }
-
-  // quando clica cancelar na tela de cnpj
-  function skipCNPJ(){
-    // optou por sair — desloga
-    logout();
-  }
-
-  // Valida se resposta BrasilAPI indica MEI (defensivo)
-  function isMEIFromBrasilAPI(data){
-    if(!data) return false;
-    // várias maneiras que podem indicar MEI:
-    try {
-      // 1) objeto simples/simples_mei
-      if(data.simples && (data.simples.simples_mei === true || data.simples_simples === true)) return true;
-      // 2) campos com texto MEI
-      if(/MEI/i.test(String(data.tipo || '') ) ) return true;
-      if(/MEI/i.test(String(data.natureza_juridica || '') ) ) return true;
-      // 3) porte or description
-      if(/microempreendedor|microempreended/i.test(String(data.natureza_juridica || '') ) ) return true;
-      // 4) some APIs return 'opcao_simples' or 'enti' - check atividade_principal text?
-      if(data.atividade_principal && Array.isArray(data.atividade_principal)){
-        const txt = (data.atividade_principal[0].text || '') + '';
-        if(/MEI/i.test(txt)) return true;
+      out.innerHTML += `<div style="color:var(--cor-vermelho);font-weight:700;margin-top:8px;">Este CNPJ NÃO é MEI.</div>`;
+      if(doLogoutIfNotMEI){
+        setTimeout(() => logout(), 1200);
       }
-    } catch(e){}
-    return false;
-  }
-
-  // Consulta CNPJ e valida, com opção de forcar logout automatico caso não seja MEI
-  async function consultarCNPJ(doLogoutIfNotMEI = true){
-    const out = document.getElementById('cnpj-result');
-    const raw = document.getElementById('cnpj-input').value || '';
-    const cnpj = raw.replace(/\D/g,'');
-    out.innerHTML = 'Buscando...';
-    if(!cnpj || cnpj.length !== 14){
-      out.innerHTML = '<span style="color:#a00">CNPJ inválido — informe 14 dígitos.</span>';
-      return;
     }
-    try {
-      const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
-      if(!res.ok){
-        out.innerHTML = '<span style="color:#a00">Não encontrado / API indisponível</span>';
-        return;
-      }
-      const data = await res.json();
-      // mostrar resumo
-      out.innerHTML = `
-        <strong>${escapeHtml(data.nome || data.fantasia || '')}</strong><br/>
-        CNPJ: ${escapeHtml(data.cnpj || cnpj)} • Situação: ${escapeHtml(data.situacao || data.estagio || '')}<br/>
-        Abertura: ${escapeHtml(data.data_situacao || data.abertura || '')}<br/>
-        Atividade Principal: ${escapeHtml((data.atividade_principal && data.atividade_principal[0] && data.atividade_principal[0].text) || '')}
-      `;
+  } catch (err) {
+    out.innerHTML = "<span style='color:#a00'>Erro inesperado.</span>";
+  }
+}
 
-      // validar MEI
-      const isMei = isMEIFromBrasilAPI(data);
-      if(isMei){
-        // liberado
-        out.innerHTML += `<div style="margin-top:10px;color:var(--cor-verde);font-weight:700">CNPJ validado como MEI — acesso liberado.</div>`;
-        // desbloquear app
-        unlockApp(data);
-      } else {
-        // não é MEI -> mostra mensagem e desloga (opção B)
-        out.innerHTML += `<div style="margin-top:10px;color:var(--cor-vermelho);font-weight:700">Este CNPJ não está registrado como MEI. O app é só para MEI.</div>`;
-        if(doLogoutIfNotMEI){
-          setTimeout(async ()=> {
-            alert('Seu CNPJ não é MEI. Você será desconectado.');
-            await logout();
-          }, 1200);
-        }
-      }
+function skipCNPJ(){ logout(); }
 
-    } catch(e){
-      console.error('ERR CNPJ', e);
-      out.innerHTML = '<span style="color:#a00">Erro na consulta: ' + escapeHtml(e.message||e) + '</span>';
-    }
+/* ---- DESBLOQUEIA A ÁREA DO APP ---- */
+function unlockApp(){
+  document.getElementById("cnpj-screen").classList.add("hidden");
+  document.getElementById("app-area").classList.remove("hidden");
+  sidebar.classList.remove("hidden");
+  showPage("dashboard");
+  carregarDadosIniciais();
+}
+
+/* ---- HELPER ---- */
+function escapeHtml(txt){
+  if (!txt) return "";
+  return txt.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ---- API DO BACKEND ---- */
+async function apiFetch(path, method="GET", body=null){
+  if (!session?.access_token) throw new Error("Usuário sem sessão");
+  const headers = {
+    "Content-Type":"application/json",
+    "Authorization":"Bearer " + session.access_token
+  };
+
+  const res = await fetch(API_BASE + path, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : null
+  });
+
+  if (!res.ok){
+    const txt = await res.text();
+    throw new Error(`API ${res.status}: ${txt}`);
   }
 
-  // ================= BACKEND INTEGRAÇÃO =================
-  async function apiFetch(path, method='GET', body=null){
-    if(!session || !session.access_token) throw new Error('Usuário sem sessão');
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + session.access_token
-    };
-    const res = await fetch(API_BASE + path, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : null,
-    });
-    if(!res.ok){
-      const txt = await res.text();
-      throw new Error(`API ${res.status}: ${txt}`);
-    }
-    return res.json();
+  return res.json();
+}
+
+/* ---- CARREGAR DADOS INICIAIS ---- */
+async function carregarDadosIniciais(){
+  const s = await supabaseClient.auth.getSession();
+  session = s.data.session;
+  user = session?.user ?? null;
+
+  try { receitas = await apiFetch("receitas/"); } catch { receitas = []; }
+  try { compras = await apiFetch("compras/"); } catch { compras = []; }
+
+  atualizarDashboard();
+  renderHistory();
+}
+
+/* ---- LANÇAMENTOS ---- */
+async function adicionarReceita(){
+  const descricao = document.getElementById("descricao-receita").value.trim();
+  const valor = Number(document.getElementById("valor-receita").value);
+
+  if (!descricao || !valor) return alert("Campos inválidos");
+
+  const res = await apiFetch("add-receita/","POST",{descricao,valor});
+  receitas.unshift(res.data || res);
+
+  document.getElementById("descricao-receita").value = "";
+  document.getElementById("valor-receita").value = "";
+
+  atualizarDashboard();
+  renderHistory();
+}
+
+async function adicionarCompra(){
+  const descricao = document.getElementById("descricao-compra").value.trim();
+  const valor = Number(document.getElementById("valor-compra").value);
+
+  if (!descricao || !valor) return alert("Campos inválidos");
+
+  const res = await apiFetch("add-compra/","POST",{descricao,valor});
+  compras.unshift(res.data || res);
+
+  document.getElementById("descricao-compra").value = "";
+  document.getElementById("valor-compra").value = "";
+
+  atualizarDashboard();
+  renderHistory();
+}
+
+/* ---- DASHBOARD ---- */
+function atualizarDashboard(){
+  const sumR = receitas.reduce((t,i)=>t+Number(i.valor||0),0);
+  const sumC = compras.reduce((t,i)=>t+Number(i.valor||0),0);
+
+  document.getElementById("total-receitas-display").innerText =
+    sumR.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+  document.getElementById("total-compras-display").innerText =
+    sumC.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+  const restante = 81000 - sumR;
+  document.getElementById("resumo-rapido").innerText =
+    `Receitas: R$ ${sumR} • Compras: R$ ${sumC} • Limite restante: R$ ${restante}`;
+}
+
+/* ---- HISTÓRICO ---- */
+function renderHistory(){
+  const filtro = document.getElementById("filtro-tipo").value;
+  const list = document.getElementById("history-list");
+  list.innerHTML = "";
+
+  let items = [];
+
+  if (filtro==="all" || filtro==="receitas"){
+    receitas.forEach(r => items.push({type:"receita",...r}));
+  }
+  if (filtro==="all" || filtro==="compras"){
+    compras.forEach(c => items.push({type:"compra",...c}));
   }
 
-  // carregar receitas/compras e dashboard quando liberado
-  async function carregarDadosIniciais(){
-    try {
-      // atualizar session por precaução
-      const s = await supabaseClient.auth.getSession();
-      session = s.data.session;
-      user = session?.user ?? null;
-    } catch(e){}
-    // carregar dados do backend
-    try {
-      receitas = await apiFetch('receitas/');
-    } catch(e){ receitas = []; console.warn('erro receitas', e); }
-    try {
-      compras = await apiFetch('compras/');
-    } catch(e){ compras = []; console.warn('erro compras', e); }
-
-    atualizarDashboard();
-    renderHistory();
+  if (items.length===0){
+    list.innerHTML = "<div class='row'><div>Nenhum lançamento.</div></div>";
+    return;
   }
 
-  // adicionar receita
-  async function adicionarReceita(){
-    try {
-      const descricao = document.getElementById('descricao-receita').value.trim();
-      const valor = parseFloat(document.getElementById('valor-receita').value);
-      if(!descricao || !valor) return alert('Descrição e valor válidos');
-      const res = await apiFetch('add-receita/','POST',{descricao,valor});
-      if(res && res.data){
-        const inserted = Array.isArray(res.data) ? res.data[0] : res.data;
-        receitas.unshift(inserted);
-      } else {
-        await carregarDadosIniciais();
-      }
-      document.getElementById('descricao-receita').value='';
-      document.getElementById('valor-receita').value='';
-      atualizarDashboard();
-      renderHistory();
-    } catch(err){
-      console.error(err);
-      alert('Erro ao adicionar receita: ' + (err.message || err));
-    }
-  }
+  items.sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
 
-  async function adicionarCompra(){
-    try {
-      const descricao = document.getElementById('descricao-compra').value.trim();
-      const valor = parseFloat(document.getElementById('valor-compra').value);
-      if(!descricao || !valor) return alert('Descrição e valor válidos');
-      const res = await apiFetch('add-compra/','POST',{descricao,valor});
-      if(res && res.data){
-        const inserted = Array.isArray(res.data) ? res.data[0] : res.data;
-        compras.unshift(inserted);
-      } else {
-        await carregarDadosIniciais();
-      }
-      document.getElementById('descricao-compra').value='';
-      document.getElementById('valor-compra').value='';
-      atualizarDashboard();
-      renderHistory();
-    } catch(err){
-      console.error(err);
-      alert('Erro ao adicionar compra: ' + (err.message || err));
-    }
-  }
+  items.forEach(it => {
+    const row = document.createElement("div");
+    row.className = "row";
 
-  // dashboard update
-  function atualizarDashboard(){
-    const somaReceitas = receitas.reduce((s,r)=>s + (Number(r.valor)||0), 0);
-    const somaCompras = compras.reduce((s,c)=>s + (Number(c.valor)||0), 0);
-    document.getElementById('total-receitas-display').innerText = formatBRL(somaReceitas);
-    document.getElementById('total-compras-display').innerText = formatBRL(somaCompras);
-    const restante = 81000 - somaReceitas;
-    document.getElementById('resumo-rapido').innerText =
-      `Receitas: ${formatBRL(somaReceitas)} • Compras: ${formatBRL(somaCompras)} • Limite restante: ${formatBRL(restante)}`;
-  }
+    const left = document.createElement("div");
+    left.innerHTML = `
+      <strong>${it.type==="receita"?"Receita":"Compra"}</strong>
+      <div>${escapeHtml(it.descricao)}</div>
+    `;
 
-  // history render
-  function renderHistory(){
-    const filtro = document.getElementById('filtro-tipo').value;
-    const list = document.getElementById('history-list');
-    list.innerHTML = '';
-    let items = [];
-    if(filtro==='all' || filtro==='receitas'){
-      receitas.forEach(r=> items.push({type:'receita', descricao:r.descricao, valor:r.valor, created_at:r.created_at}));
-    }
-    if(filtro==='all' || filtro==='compras'){
-      compras.forEach(c=> items.push({type:'compra', descricao:c.descricao, valor:c.valor, created_at:c.created_at}));
-    }
-    if(items.length===0){
-      list.innerHTML = "<div class='row'><div>Nenhum lançamento.</div></div>";
-      return;
-    }
-    items.sort((a,b)=> (b.created_at||0) - (a.created_at||0));
-    items.forEach(it=>{
-      const row = document.createElement('div');
-      row.className = 'row';
-      const left = document.createElement('div');
-      left.innerHTML = `<strong>${it.type==='receita'?'Receita':'Compra'}</strong><div>${escapeHtml(it.descricao)}</div>`;
-      const right = document.createElement('div');
-      right.innerHTML = `<div style="text-align:right">${formatBRL(it.valor)}</div>`;
-      row.appendChild(left); row.appendChild(right);
-      list.appendChild(row);
-    });
-  }
+    const right = document.createElement("div");
+    right.innerHTML = `
+      <div style="text-align:right">
+        ${Number(it.valor).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+      </div>
+    `;
 
-  document.getElementById('filtro-tipo').addEventListener('change', renderHistory);
+    row.appendChild(left);
+    row.appendChild(right);
+    list.appendChild(row);
+  });
+}
 
-  // navigation (sidebar)
-  function showPage(page){
-    const pages = ['dashboard','lancamentos','historico','cnpj'];
-    pages.forEach(p => {
-      const el = document.getElementById(p);
-      if(el) el.style.display = (p===page)?'block':'none';
-    });
-    // highlight
-    document.querySelectorAll('.sidebar .btn').forEach(b=>{
-      b.classList.toggle('active', b.dataset.target===page);
-    });
-  }
+document.getElementById("filtro-tipo").addEventListener("change", renderHistory);
 
-  // helpers
-  function formatBRL(v){ return Number(v || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
-  function escapeHtml(str){ if(!str) return ''; return String(str).replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+/* ---- NAVEGAÇÃO ---- */
+function showPage(page){
+  const pages = ["dashboard","lancamentos","historico","cnpj","acoes"];
+  pages.forEach(p => {
+    const el = document.getElementById(p);
+    if (el) el.style.display = p===page ? "block" : "none";
+  });
 
-  // small UX
-  document.getElementById('valor-receita').addEventListener('keydown', e=>{ if(e.key==='Enter') adicionarReceita(); });
-  document.getElementById('valor-compra').addEventListener('keydown', e=>{ if(e.key==='Enter') adicionarCompra(); });
-  document.getElementById('cnpj-input').addEventListener('keydown', e=>{ if(e.key==='Enter') consultarCNPJ(true); });
+  document
+    .querySelectorAll(".sidebar .btn")
+    .forEach(b => b.classList.toggle("active", b.dataset.target===page));
+}
 
-  // initial view default
-  showOnlyLogin();
-
-  </script>
+/* ---- Início padrão ---- */
+showOnlyLogin();
+</script>
 </body>
 </html>
+
+
