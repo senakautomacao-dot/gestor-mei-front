@@ -1,189 +1,464 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor MEI - SaaS</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestor MEI - Painel</title>
 
-    <!-- CSS LIMPO + SIMPLES (OPÇÃO B) -->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
+  <!-- CSS profissional (sidebar + conteúdo) -->
+  <style>
+    :root{
+      --cor-primaria:#007bff;
+      --cor-verde:#28a745;
+      --cor-laranja:#fd7e14;
+      --cor-vermelho:#dc3545;
+      --bg:#f4f7f6;
+      --text:#333;
+      --card:#ffffff;
+      --borda:#e0e0e0;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+    }
 
-        header {
-            background-color: #007bff;
-            padding: 20px;
-            color: white;
-            text-align: center;
-        }
+    /* Sidebar */
+    .sidebar{
+      width:280px;
+      background:var(--cor-primaria);
+      color:white;
+      padding:28px 20px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .brand{font-size:1.6rem;font-weight:700;text-align:center;margin-bottom:8px}
+    .sidebar .btn{
+      background:transparent;
+      border:2px solid rgba(255,255,255,0.7);
+      color:white;
+      padding:12px 14px;
+      border-radius:8px;
+      text-align:left;
+      cursor:pointer;
+      font-weight:600;
+      margin-bottom:10px;
+    }
+    .sidebar .btn:hover{background:rgba(255,255,255,0.08)}
+    .sidebar .small{font-size:0.9rem;color:rgba(255,255,255,0.9)}
+    .sidebar .footer{margin-top:auto;font-size:0.85rem;color:rgba(255,255,255,0.85)}
 
-        h1, h2 { margin: 0 0 15px; }
+    /* Main content */
+    .main{
+      flex:1;
+      padding:24px;
+      overflow:auto;
+    }
+    header.app-header{
+      background:linear-gradient(90deg,var(--cor-primaria),#0056b3);
+      color:white;
+      padding:18px;
+      border-radius:8px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:18px;
+    }
+    header.app-header .left{display:flex;gap:12px;align-items:center}
+    header.app-header h1{margin:0;font-size:1.25rem}
+    header.app-header .actions{display:flex;gap:10px;align-items:center}
 
-        #container {
-            max-width: 800px;
-            margin: 30px auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+    /* Cards / sections */
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}
+    .card{background:var(--card);padding:16px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.04)}
+    .card h3{margin:0 0 8px 0;color:var(--cor-primaria)}
+    .big{font-size:1.5rem;font-weight:700}
 
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 18px;
-            font-size: 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
+    /* Forms */
+    label{display:block;font-weight:600;margin-bottom:6px}
+    input[type="text"], input[type="number"], input[type="tel"]{
+      width:100%;padding:10px;border:1px solid var(--borda);border-radius:6px;margin-bottom:10px;
+    }
+    .btn-primary{
+      background:var(--cor-primaria);color:white;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:700;
+    }
+    .btn-ghost{background:transparent;border:2px solid var(--cor-primaria);color:var(--cor-primaria);padding:8px 10px;border-radius:8px;cursor:pointer}
 
-        button:hover { background-color: #0056b3; }
+    /* History list */
+    .history{max-height:320px;overflow:auto;border:1px solid #f0f0f0;border-radius:6px;padding:6px}
+    .history .row{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #f7f7f7}
+    .history .row:last-child{border-bottom:none}
 
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-
-        .item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .empty {
-            color: #777;
-            font-style: italic;
-        }
-    </style>
+    /* responsive */
+    @media (max-width:1000px){
+      .grid{grid-template-columns:repeat(1,1fr)}
+      .sidebar{width:100%;flex-direction:row;gap:6px;align-items:center;padding:12px;overflow:auto}
+      body{flex-direction:column}
+    }
+  </style>
 </head>
 <body>
 
-<header>
-    <h1>Gestor MEI</h1>
-</header>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">Gestor MEI</div>
+    <div id="user-block">
+      <div class="small">Não autenticado</div>
+    </div>
 
-<div id="container">
+    <button class="btn" data-target="dashboard" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="btn" data-target="lancamentos" onclick="showPage('lancamentos')">Lançamentos</button>
+    <button class="btn" data-target="historico" onclick="showPage('historico')">Histórico</button>
+    <button class="btn" data-target="cnpj" onclick="showPage('cnpj')">Consulta CNPJ (BrasilAPI)</button>
 
-    <!-- ÁREA DE LOGIN -->
-    <section id="login-section">
-        <h2>Entrar</h2>
-        <p>Use sua conta Google para continuar.</p>
-        <button id="google-login-btn">Entrar com Google</button>
+    <div style="height:10px"></div>
+    <button id="btn-logout" class="btn" style="display:none;background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.25)" onclick="logout()">Sair</button>
+
+    <div class="footer">Versão 1 • <small>Gestor MEI</small></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="app-header">
+      <div class="left">
+        <h1>Painel do MEI</h1>
+      </div>
+      <div class="actions">
+        <button id="btn-login" class="btn-primary">Entrar com Google</button>
+      </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="card" style="display:none;">
+      <div class="grid">
+        <div class="card">
+          <h3>Total Faturado</h3>
+          <div class="big" id="total-receitas-display">R$ 0,00</div>
+        </div>
+        <div class="card">
+          <h3>Total Compras</h3>
+          <div class="big" id="total-compras-display">R$ 0,00</div>
+        </div>
+        <div class="card">
+          <h3>Limite MEI (anual)</h3>
+          <div class="big" id="limite-mei-display">R$ 81.000,00</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Resumo Rápido</h3>
+        <div id="resumo-rapido">Carregando...</div>
+      </div>
     </section>
 
-    <!-- ÁREA PRINCIPAL -->
-    <section id="app-section" style="display:none;">
-        <h2>Dashboard</h2>
-        <p><strong>Total Recebido:</strong> R$ <span id="total-receitas">0,00</span></p>
-        <p><strong>Total Comprado:</strong> R$ <span id="total-compras">0,00</span></p>
+    <!-- LANÇAMENTOS -->
+    <section id="lancamentos" class="card" style="display:none;">
+      <h3>Adicionar Receita</h3>
+      <label for="descricao-receita">Descrição</label>
+      <input id="descricao-receita" type="text" placeholder="Ex: Venda do mês">
+      <label for="valor-receita">Valor (R$)</label>
+      <input id="valor-receita" type="number" step="0.01" placeholder="1500.00">
+      <button class="btn-primary" onclick="adicionarReceita()">Adicionar Receita</button>
 
-        <hr>
+      <hr style="margin:18px 0">
 
-        <h2>Lançar Receita</h2>
-        <input id="desc-receita" placeholder="Descrição">
-        <input id="valor-receita" type="number" placeholder="Valor">
-        <button onclick="adicionarReceita()">Adicionar Receita</button>
-
-        <h2>Lançar Compra</h2>
-        <input id="desc-compra" placeholder="Descrição">
-        <input id="valor-compra" type="number" placeholder="Valor">
-        <button onclick="adicionarCompra()">Adicionar Compra</button>
-
-        <hr>
-
-        <h2>Histórico</h2>
-        <div id="lista-historico" class="empty">Nenhum lançamento ainda.</div>
+      <h3>Adicionar Compra</h3>
+      <label for="descricao-compra">Descrição</label>
+      <input id="descricao-compra" type="text" placeholder="Ex: Compra de materiais">
+      <label for="valor-compra">Valor (R$)</label>
+      <input id="valor-compra" type="number" step="0.01" placeholder="200.00">
+      <button class="btn-primary" onclick="adicionarCompra()">Adicionar Compra</button>
     </section>
-</div>
 
-<!-- SCRIPT SUPABASE + BACKEND DJANGO -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script>
-// CONFIG SUPABASE
-const SUPABASE_URL = "https://zrpxtooampraytmkywhl.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpycHh0b29hbXByYXl0bWt5d2hsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzAzMjgxNiwiZXhwIjoyMDc4NjA4ODE2fQ.uqKGpYaZ6mCac7ISyTl_4wqAObNJ5mbReoxdj3XrvzI"; // SUA CHAVE AQUI
-const API_BASE = "https://gestor-mei-backend.onrender.com/api/";
+    <!-- HISTÓRICO -->
+    <section id="historico" class="card" style="display:none;">
+      <h3>Histórico</h3>
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <div style="flex:1">
+          <label>Filtrar por</label>
+          <select id="filtro-tipo">
+            <option value="all">Todos</option>
+            <option value="receitas">Receitas</option>
+            <option value="compras">Compras</option>
+          </select>
+        </div>
+      </div>
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-let usuario = null;
+      <div class="history" id="history-list">
+        <div class="row"><div>Nenhum lançamento.</div></div>
+      </div>
+    </section>
 
-// LOGIN GOOGLE
-const loginBtn = document.getElementById("google-login-btn");
-loginBtn.addEventListener("click", async () => {
-    const { data, error } = await supabaseClient.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: window.location.href }
+    <!-- CNPJ -->
+    <section id="cnpj" class="card" style="display:none;">
+      <h3>Consulta CNPJ (BrasilAPI)</h3>
+      <label for="cnpj-input">CNPJ (somente números)</label>
+      <input id="cnpj-input" type="text" placeholder="00000000000191">
+      <button class="btn-primary" onclick="consultarCNPJ()">Consultar</button>
+
+      <div id="cnpj-result" style="margin-top:16px"></div>
+    </section>
+  </main>
+
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <!-- SCRIPT: lógica, autenticação, chamadas API e BrasilAPI -->
+  <script>
+  /***** CONFIG - troque estes valores pelos seus reais *****/
+  const SUPABASE_URL = "https://zrpxtooampraytmkywhl.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpycHh0b29hbXByYXl0bWt5d2hsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzAzMjgxNiwiZXhwIjoyMDc4NjA4ODE2fQ.uqKGpYaZ6mCac7ISyTl_4wqAObNJ5mbReoxdj3XrvzI"; // <<== substituir
+  const API_BASE = "https://gestor-mei-backend.onrender.com/api/"; // <<== substituir se for outro
+  /*********************************************************/
+
+  const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Estado
+  let session = null;
+  let user = null;
+  let receitas = [];
+  let compras = [];
+
+  // UI refs
+  const btnLogin = document.getElementById('btn-login');
+  const btnLogout = document.getElementById('btn-logout');
+  const userBlock = document.getElementById('user-block');
+
+  // Inicializa: verifica sessão existente
+  (async function init(){
+    const { data } = await supabase.auth.getSession();
+    session = data.session;
+    user = session?.user ?? null;
+    updateAuthUI();
+
+    // escuta mudanças de auth
+    supabase.auth.onAuthStateChange((event, s) => {
+      session = s;
+      user = s?.user ?? null;
+      updateAuthUI();
+      if(user) loadAll();
     });
-});
+  })();
 
-// VERIFICA SESSÃO
-supabaseClient.auth.onAuthStateChange(async (event, session) => {
-    if (session && session.user) {
-        usuario = session.user;
-        document.getElementById("login-section").style.display = "none";
-        document.getElementById("app-section").style.display = "block";
-        carregarDados();
+  // atualiza UI auth
+  function updateAuthUI(){
+    if(user){
+      btnLogin.style.display = 'none';
+      btnLogout.style.display = 'block';
+      userBlock.innerHTML = `<div style="font-weight:700">${user.email}</div><div class="small">ID: ${user.id}</div>`;
+      showPage('dashboard');
+      loadAll();
+    } else {
+      btnLogin.style.display = 'block';
+      btnLogout.style.display = 'none';
+      userBlock.innerHTML = `<div class="small">Não autenticado</div>`;
+      showPage('dashboard'); // mostrar instruções; usuário deve logar
     }
-});
+  }
 
-// FUNÇÕES API
-async function carregarDados() {
-    const receitas = await fetch(API_BASE + "receitas/" + usuario.id).then(r=>r.json());
-    const compras = await fetch(API_BASE + "compras/" + usuario.id).then(r=>r.json());
-
-    let totalReceitas = 0, totalCompras = 0;
-    let html = "";
-
-    receitas.forEach(r=>{
-        totalReceitas += Number(r.valor);
-        html += `<div class='item'>🟦 Receita: ${r.descricao} — R$ ${r.valor}</div>`;
+  // loginWithGoogle
+  btnLogin.addEventListener('click', async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.href }
     });
+    if(error) alert("Erro login: " + error.message);
+  });
 
-    compras.forEach(c=>{
-        totalCompras += Number(c.valor);
-        html += `<div class='item'>🟥 Compra: ${c.descricao} — R$ ${c.valor}</div>`;
+  // logout
+  async function logout(){
+    await supabase.auth.signOut();
+    session = null; user = null;
+    updateAuthUI();
+    window.location.reload();
+  }
+
+  // Paginação / navegação
+  function showPage(page){
+    const pages = ['dashboard','lancamentos','historico','cnpj'];
+    pages.forEach(p => {
+      const el = document.getElementById(p);
+      if(el) el.style.display = (p===page)?'block':'none';
     });
-
-    document.getElementById("lista-historico").innerHTML = html || "<p class='empty'>Nenhum lançamento.</p>";
-    document.getElementById("total-receitas").innerText = totalReceitas.toFixed(2);
-    document.getElementById("total-compras").innerText = totalCompras.toFixed(2);
-}
-
-async function adicionarReceita() {
-    const desc = document.getElementById("desc-receita").value;
-    const valor = document.getElementById("valor-receita").value;
-    
-    await fetch(API_BASE + "add-receita/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: usuario.id, descricao: desc, valor })
+    // destacar botão no sidebar
+    document.querySelectorAll('.sidebar .btn').forEach(b=>{
+      b.classList.toggle('active', b.dataset.target===page);
     });
+  }
 
-    carregarDados();
-}
-
-async function adicionarCompra() {
-    const desc = document.getElementById("desc-compra").value;
-    const valor = document.getElementById("valor-compra").value;
-    
-    await fetch(API_BASE + "add-compra/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: usuario.id, descricao: desc, valor })
+  // Função utilitária para chamadas ao backend (com token)
+  async function apiFetch(path, method='GET', body=null){
+    if(!user || !session) throw new Error('Usuário não autenticado');
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + session.access_token
+    };
+    const res = await fetch(API_BASE + path, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : null,
     });
+    if(!res.ok){
+      const text = await res.text();
+      throw new Error(`API ${res.status}: ${text}`);
+    }
+    return res.json();
+  }
 
-    carregarDados();
-}
-</script>
+  // Carrega receitas e compras e dashboard
+  async function loadAll(){
+    try {
+      receitas = await apiFetch('receitas/'); // retorna array
+    } catch(e){
+      console.error('Erro carregar receitas:', e);
+      receitas = [];
+    }
+    try {
+      compras = await apiFetch('compras/'); // retorna array
+    } catch(e){
+      console.error('Erro carregar compras:', e);
+      compras = [];
+    }
+    atualizarDashboard();
+    renderHistory();
+  }
+
+  // Adicionar receita
+  async function adicionarReceita(){
+    try {
+      const descricao = document.getElementById('descricao-receita').value.trim();
+      const valor = parseFloat(document.getElementById('valor-receita').value);
+      if(!descricao || !valor) return alert('Descrição e valor válidos');
+      const res = await apiFetch('add-receita/','POST',{descricao,valor});
+      // backend retorna {success:true,data: [...]}
+      if(res && res.data){
+        // insere local
+        const inserted = Array.isArray(res.data) ? res.data[0] : res.data;
+        receitas.unshift(inserted);
+      } else {
+        // caso o backend retorne forma diferente
+        await loadAll();
+      }
+      document.getElementById('descricao-receita').value='';
+      document.getElementById('valor-receita').value='';
+      atualizarDashboard();
+      renderHistory();
+    } catch(err){
+      console.error(err);
+      alert('Erro ao adicionar receita: ' + err.message);
+    }
+  }
+
+  // Adicionar compra
+  async function adicionarCompra(){
+    try {
+      const descricao = document.getElementById('descricao-compra').value.trim();
+      const valor = parseFloat(document.getElementById('valor-compra').value);
+      if(!descricao || !valor) return alert('Descrição e valor válidos');
+      const res = await apiFetch('add-compra/','POST',{descricao,valor});
+      if(res && res.data){
+        const inserted = Array.isArray(res.data) ? res.data[0] : res.data;
+        compras.unshift(inserted);
+      } else {
+        await loadAll();
+      }
+      document.getElementById('descricao-compra').value='';
+      document.getElementById('valor-compra').value='';
+      atualizarDashboard();
+      renderHistory();
+    } catch(err){
+      console.error(err);
+      alert('Erro ao adicionar compra: ' + err.message);
+    }
+  }
+
+  // Atualiza dashboard
+  function atualizarDashboard(){
+    const somaReceitas = receitas.reduce((s,r)=>s + (Number(r.valor)||0), 0);
+    const somaCompras = compras.reduce((s,c)=>s + (Number(c.valor)||0), 0);
+    document.getElementById('total-receitas-display').innerText = formatBRL(somaReceitas);
+    document.getElementById('total-compras-display').innerText = formatBRL(somaCompras);
+    // resumo
+    const restante = 81000 - somaReceitas;
+    document.getElementById('resumo-rapido').innerText =
+      `Receitas: ${formatBRL(somaReceitas)} • Compras: ${formatBRL(somaCompras)} • Limite restante: ${formatBRL(restante)}`;
+  }
+
+  // Renderiza histórico
+  function renderHistory(){
+    const filtro = document.getElementById('filtro-tipo').value;
+    const list = document.getElementById('history-list');
+    list.innerHTML = '';
+    let items = [];
+    if(filtro==='all' || filtro==='receitas'){
+      receitas.forEach(r=> items.push({type:'receita', descricao:r.descricao, valor:r.valor, created_at:r.created_at}));
+    }
+    if(filtro==='all' || filtro==='compras'){
+      compras.forEach(c=> items.push({type:'compra', descricao:c.descricao, valor:c.valor, created_at:c.created_at}));
+    }
+    if(items.length===0){
+      list.innerHTML = "<div class='row'><div>Nenhum lançamento.</div></div>";
+      return;
+    }
+    // ordenar por created_at desc se existir
+    items.sort((a,b)=> (b.created_at||0) - (a.created_at||0));
+    items.forEach(it=>{
+      const row = document.createElement('div');
+      row.className = 'row';
+      const left = document.createElement('div');
+      left.innerHTML = `<strong>${it.type==='receita'?'Receita':'Compra'}</strong><div>${escapeHtml(it.descricao)}</div>`;
+      const right = document.createElement('div');
+      right.innerHTML = `<div style="text-align:right">${formatBRL(it.valor)}</div>`;
+      row.appendChild(left); row.appendChild(right);
+      list.appendChild(row);
+    });
+  }
+
+  document.getElementById('filtro-tipo').addEventListener('change', renderHistory);
+
+  // CONSULTA CNPJ via BrasilAPI
+  async function consultarCNPJ(){
+    const cnpj = document.getElementById('cnpj-input').value.replace(/\D/g,'');
+    const out = document.getElementById('cnpj-result');
+    out.innerHTML = 'Buscando...';
+    if(!cnpj || cnpj.length!==14){ out.innerHTML='CNPJ inválido (14 dígitos)'; return; }
+    try {
+      const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
+      if(!res.ok){
+        out.innerHTML = 'Não encontrado / API indisponível';
+        return;
+      }
+      const data = await res.json();
+      // Exibe nome, situação, abertura, atividade principal
+      out.innerHTML = `
+        <strong>${escapeHtml(data.nome)}</strong><br>
+        CNPJ: ${escapeHtml(data.cnpj)} • Situação: ${escapeHtml(data.estagio || data.situacao)}<br>
+        Abertura: ${escapeHtml(data.data_situacao || data.abertura)}<br>
+        Atividade Principal: ${escapeHtml((data.atividade_principal && data.atividade_principal[0] && data.atividade_principal[0].text) || '')}
+      `;
+    } catch(e){
+      console.error(e);
+      out.innerHTML = 'Erro na consulta: ' + e.message;
+    }
+  }
+
+  // Helpers
+  function formatBRL(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+  function escapeHtml(str){ if(!str) return ''; return String(str).replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+
+  // small UX: allow Enter on inputs
+  document.getElementById('valor-receita').addEventListener('keydown', e=>{ if(e.key==='Enter') adicionarReceita(); });
+  document.getElementById('valor-compra').addEventListener('keydown', e=>{ if(e.key==='Enter') adicionarCompra(); });
+  document.getElementById('cnpj-input').addEventListener('keydown', e=>{ if(e.key==='Enter') consultarCNPJ(); });
+
+  // initial page
+  showPage('dashboard');
+
+  </script>
 </body>
 </html>
